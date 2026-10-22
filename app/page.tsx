@@ -73,18 +73,49 @@ export default function Home() {
   }, [days, preferences, isLoaded]);
 
   // Handle Generate Plan from Wizard
-  const handleGeneratePlan = (newPrefs: UserPreferences) => {
-    // Generate new plan matching preferred date
-    const examDate = new Date(newPrefs.examDate);
+  const handleGeneratePlan = async (newPrefs: UserPreferences) => {
+    try {
+      const response = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          examDate: newPrefs.examDate,
+          dailyMinutes: newPrefs.dailyCapacityMins,
+          confidenceScores: {
+            cloud_concepts: newPrefs.confidenceLevels.cloudConcepts,
+            architecture_services: newPrefs.confidenceLevels.architectureServices,
+            management_governance: newPrefs.confidenceLevels.managementGovernance,
+          },
+          weekendMultiplier: newPrefs.weekendMultiplier,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.days && data.days.length > 0) {
+          setPreferences(newPrefs);
+          setDays(data.days);
+          setShowOnboarding(false);
+          setToastInfo({
+            show: true,
+            title: 'Roadmap Generated! ✨',
+            sub: data.summary || `Personalized ${data.days.length}-day plan optimized for your AZ-900 exam on ${newPrefs.examDate}.`,
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Backend plan generation error, falling back locally:', err);
+    }
+
+    // Local fallback in case of offline / network issue
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const generated = generateInitialMockPlan(today);
 
     // Apply capacity & weekend multiplier adjustments
     const adjustedDays = generated.map((day) => {
       let duration = newPrefs.dailyCapacityMins;
-      // If weekend multiplier is active and day falls on weekend
       const d = new Date(today);
       d.setDate(d.getDate() + (day.dayNumber - 1));
       const dayOfWeek = d.getDay();
@@ -145,14 +176,24 @@ export default function Home() {
     let nowCompleted = false;
 
     setDays((prevDays) => {
-      const nextDays = prevDays.map((d, index) => {
+      const nextDays = prevDays.map((d) => {
         if (d.id === dayId) {
           const isComp = d.status === 'completed';
           nowCompleted = !isComp;
+          const newStatus = (!isComp ? 'completed' : 'pending') as DayPlan['status'];
+          const completedAt = !isComp ? new Date().toISOString() : undefined;
+
+          // Dispatch asynchronous update to backend API
+          fetch(`/api/tasks/${dayId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus, completedAt }),
+          }).catch((err) => console.warn('Task status update notice:', err));
+
           return {
             ...d,
-            status: (!isComp ? 'completed' : 'pending') as DayPlan['status'],
-            completedAt: !isComp ? new Date().toISOString() : undefined,
+            status: newStatus,
+            completedAt,
           };
         }
         return d;
@@ -183,66 +224,107 @@ export default function Home() {
     setDays((prev) =>
       prev.map((d) => (d.id === dayId ? { ...d, userAnswer: answer } : d))
     );
+
+    // Dispatch update to backend
+    fetch(`/api/tasks/${dayId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userAnswer: answer }),
+    }).catch((err) => console.warn('Task answer update notice:', err));
   };
 
   // Toggle active recall explanation
   const handleToggleRevealAnswer = (dayId: string) => {
     setDays((prev) =>
-      prev.map((d) =>
-        d.id === dayId ? { ...d, isAnswerRevealed: !d.isAnswerRevealed } : d
-      )
+      prev.map((d) => {
+        if (d.id === dayId) {
+          const nextVal = !d.isAnswerRevealed;
+          fetch(`/api/tasks/${dayId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isAnswerRevealed: nextVal }),
+          }).catch((err) => console.warn('Reveal update notice:', err));
+
+          return { ...d, isAnswerRevealed: nextVal };
+        }
+        return d;
+      })
     );
   };
 
   // "Life Happens" Re-balancer Action
-  const handleRebalance = () => {
+  const handleRebalance = async () => {
     setIsRebalancing(true);
 
-    setTimeout(() => {
-      setDays((prevDays) => {
-        // Find the first uncompleted day (either 'up-next' or 'pending')
-        const firstPendingIdx = prevDays.findIndex((d) => d.status !== 'completed');
+    try {
+      const response = await fetch('/api/rebalance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          days,
+        }),
+      });
 
-        if (firstPendingIdx === -1) {
-          // All already completed
-          return prevDays;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.days && data.days.length > 0) {
+          setDays(data.days);
+          setIsRebalancing(false);
+          setToastInfo({
+            show: true,
+            title: 'Schedule Re-balanced! ⚡',
+            sub: data.message || 'Missed topic smoothly redistributed across your remaining days without breaking your exam deadline.',
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Backend rebalance error, falling back locally:', e);
+    }
+
+    // Local fallback
+    setDays((prevDays) => {
+      // Find the first uncompleted day (either 'up-next' or 'pending')
+      const firstPendingIdx = prevDays.findIndex((d) => d.status !== 'completed');
+
+      if (firstPendingIdx === -1) {
+        // All already completed
+        return prevDays;
+      }
+
+      // Shift pending tasks or mark current pending day as rebalanced
+      const updated = prevDays.map((d, idx) => {
+        if (idx < firstPendingIdx) {
+          return d; // Completed days remain untouched
         }
 
-        // Shift pending tasks or mark current pending day as rebalanced
-        const baseDate = new Date();
-        const updated = prevDays.map((d, idx) => {
-          if (idx < firstPendingIdx) {
-            return d; // Completed days remain untouched
-          }
-
-          if (idx === firstPendingIdx) {
-            // Mark as rebalanced
-            return {
-              ...d,
-              status: 'rebalanced' as const,
-              scheduledDate: `${d.scheduledDate} (Catch-up)`,
-              estimatedMinutes: Math.min(d.estimatedMinutes + 10, 60),
-            };
-          }
-
-          // Spread a slight workload bump across remaining days
+        if (idx === firstPendingIdx) {
+          // Mark as rebalanced
           return {
             ...d,
-            estimatedMinutes: Math.min(d.estimatedMinutes + 5, 55),
+            status: 'rebalanced' as const,
+            scheduledDate: `${d.scheduledDate} (Catch-up)`,
+            estimatedMinutes: Math.min(d.estimatedMinutes + 10, 60),
           };
-        });
+        }
 
-        return updated;
+        // Spread a slight workload bump across remaining days
+        return {
+          ...d,
+          estimatedMinutes: Math.min(d.estimatedMinutes + 5, 55),
+        };
       });
 
-      setIsRebalancing(false);
+      return updated;
+    });
 
-      setToastInfo({
-        show: true,
-        title: 'Schedule Re-balanced! ⚡',
-        sub: 'Missed topic smoothly redistributed across your remaining days without breaking your exam deadline.',
-      });
-    }, 400);
+    setIsRebalancing(false);
+
+    setToastInfo({
+      show: true,
+      title: 'Schedule Re-balanced! ⚡',
+      sub: 'Missed topic smoothly redistributed across your remaining days without breaking your exam deadline.',
+    });
   };
 
   // Counts for filters
