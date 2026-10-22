@@ -1,69 +1,439 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect, useMemo, useTransition } from 'react';
+import { DayPlan, UserPreferences, PlanState } from '@/types/study-plan';
+import {
+  DEFAULT_USER_PREFERENCES,
+  generateInitialMockPlan,
+  generateJudgeDemoPlan,
+  formatDayDate,
+} from '@/lib/mock-az900-plan';
+import { fireCelebrationConfetti } from '@/lib/confetti';
+import { Navbar } from '@/components/Navbar';
+import { OnboardingWizard } from '@/components/OnboardingWizard';
+import { ReadinessHeader } from '@/components/ReadinessHeader';
+import { FilterBar, FilterOption } from '@/components/FilterBar';
+import { DailyTaskCard } from '@/components/DailyTaskCard';
+import { Toast } from '@/components/Toast';
+import { Sparkles, Calendar, Zap, RefreshCw, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
+
+const STORAGE_KEY = 'az900_vibe_planner_state_v2';
 
 export default function Home() {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_USER_PREFERENCES);
+  const [days, setDays] = useState<DayPlan[]>([]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState<FilterOption>('all');
+  const [toastInfo, setToastInfo] = useState<{
+    show: boolean;
+    title: string;
+    sub?: string;
+  } | null>(null);
+  const [isRebalancing, setIsRebalancing] = useState(false);
+
+  // 1. Load from localStorage or initialize
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed: PlanState = JSON.parse(saved);
+        if (parsed.days && parsed.days.length > 0) {
+          setDays(parsed.days);
+          setPreferences(parsed.preferences || DEFAULT_USER_PREFERENCES);
+          setShowOnboarding(!parsed.preferences?.hasCompletedOnboarding);
+          setIsLoaded(true);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse localStorage plan state:', e);
+    }
+
+    // Default: Show onboarding or fallback to initial plan
+    const initialDays = generateInitialMockPlan();
+    setDays(initialDays);
+    setPreferences(DEFAULT_USER_PREFERENCES);
+    setShowOnboarding(true);
+    setIsLoaded(true);
+  }, []);
+
+  // 2. Sync to localStorage
+  useEffect(() => {
+    if (!isLoaded || days.length === 0) return;
+    try {
+      const stateToSave: PlanState = {
+        preferences,
+        days,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (e) {
+      console.warn('Failed to save to localStorage:', e);
+    }
+  }, [days, preferences, isLoaded]);
+
+  // Handle Generate Plan from Wizard
+  const handleGeneratePlan = (newPrefs: UserPreferences) => {
+    // Generate new plan matching preferred date
+    const examDate = new Date(newPrefs.examDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const generated = generateInitialMockPlan(today);
+
+    // Apply capacity & weekend multiplier adjustments
+    const adjustedDays = generated.map((day) => {
+      let duration = newPrefs.dailyCapacityMins;
+      // If weekend multiplier is active and day falls on weekend
+      const d = new Date(today);
+      d.setDate(d.getDate() + (day.dayNumber - 1));
+      const dayOfWeek = d.getDay();
+      if (newPrefs.weekendMultiplier && (dayOfWeek === 0 || dayOfWeek === 6)) {
+        duration = Math.round(duration * 1.5);
+      }
+      return {
+        ...day,
+        estimatedMinutes: duration,
+      };
+    });
+
+    setPreferences(newPrefs);
+    setDays(adjustedDays);
+    setShowOnboarding(false);
+
+    setToastInfo({
+      show: true,
+      title: 'Roadmap Generated! ✨',
+      sub: `Personalized 7-day plan optimized for your AZ-900 exam on ${newPrefs.examDate}.`,
+    });
+  };
+
+  // Handle Instant Judge Demo CTA
+  const handleLoadJudgeDemo = () => {
+    const demoPlan = generateJudgeDemoPlan();
+    const demoPrefs: UserPreferences = {
+      ...DEFAULT_USER_PREFERENCES,
+      hasCompletedOnboarding: true,
+    };
+    setDays(demoPlan);
+    setPreferences(demoPrefs);
+    setShowOnboarding(false);
+
+    // Trigger celebration confetti
+    fireCelebrationConfetti();
+
+    setToastInfo({
+      show: true,
+      title: '⚡ Instant Judge Demo Plan Loaded!',
+      sub: 'Day 1 & Day 2 completed. Progress bars and readiness metrics are now dynamically live for demonstration.',
+    });
+  };
+
+  // Reset Plan
+  const handleResetPlan = () => {
+    if (window.confirm('Reset study plan and restart onboarding?')) {
+      const initialDays = generateInitialMockPlan();
+      setDays(initialDays);
+      setPreferences(DEFAULT_USER_PREFERENCES);
+      setShowOnboarding(true);
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  };
+
+  // Toggle Day Completion
+  const handleToggleComplete = (dayId: string) => {
+    let nowCompleted = false;
+
+    setDays((prevDays) => {
+      const nextDays = prevDays.map((d, index) => {
+        if (d.id === dayId) {
+          const isComp = d.status === 'completed';
+          nowCompleted = !isComp;
+          return {
+            ...d,
+            status: (!isComp ? 'completed' : 'pending') as DayPlan['status'],
+            completedAt: !isComp ? new Date().toISOString() : undefined,
+          };
+        }
+        return d;
+      });
+
+      // Automatically update the next pending item to 'up-next'
+      let foundUpNext = false;
+      return nextDays.map((d) => {
+        if (d.status === 'completed') return d;
+        if (!foundUpNext) {
+          foundUpNext = true;
+          return { ...d, status: 'up-next' as DayPlan['status'] };
+        }
+        return {
+          ...d,
+          status: d.status === 'rebalanced' ? 'rebalanced' : ('pending' as DayPlan['status']),
+        };
+      });
+    });
+
+    if (nowCompleted) {
+      fireCelebrationConfetti();
+    }
+  };
+
+  // Save active recall user answer
+  const handleUpdateUserAnswer = (dayId: string, answer: string) => {
+    setDays((prev) =>
+      prev.map((d) => (d.id === dayId ? { ...d, userAnswer: answer } : d))
+    );
+  };
+
+  // Toggle active recall explanation
+  const handleToggleRevealAnswer = (dayId: string) => {
+    setDays((prev) =>
+      prev.map((d) =>
+        d.id === dayId ? { ...d, isAnswerRevealed: !d.isAnswerRevealed } : d
+      )
+    );
+  };
+
+  // "Life Happens" Re-balancer Action
+  const handleRebalance = () => {
+    setIsRebalancing(true);
+
+    setTimeout(() => {
+      setDays((prevDays) => {
+        // Find the first uncompleted day (either 'up-next' or 'pending')
+        const firstPendingIdx = prevDays.findIndex((d) => d.status !== 'completed');
+
+        if (firstPendingIdx === -1) {
+          // All already completed
+          return prevDays;
+        }
+
+        // Shift pending tasks or mark current pending day as rebalanced
+        const baseDate = new Date();
+        const updated = prevDays.map((d, idx) => {
+          if (idx < firstPendingIdx) {
+            return d; // Completed days remain untouched
+          }
+
+          if (idx === firstPendingIdx) {
+            // Mark as rebalanced
+            return {
+              ...d,
+              status: 'rebalanced' as const,
+              scheduledDate: `${d.scheduledDate} (Catch-up)`,
+              estimatedMinutes: Math.min(d.estimatedMinutes + 10, 60),
+            };
+          }
+
+          // Spread a slight workload bump across remaining days
+          return {
+            ...d,
+            estimatedMinutes: Math.min(d.estimatedMinutes + 5, 55),
+          };
+        });
+
+        return updated;
+      });
+
+      setIsRebalancing(false);
+
+      setToastInfo({
+        show: true,
+        title: 'Schedule Re-balanced! ⚡',
+        sub: 'Missed topic smoothly redistributed across your remaining days without breaking your exam deadline.',
+      });
+    }, 400);
+  };
+
+  // Counts for filters
+  const filterCounts = useMemo(() => {
+    const all = days.length;
+    const completed = days.filter((d) => d.status === 'completed').length;
+    const pending = days.filter((d) => d.status !== 'completed').length;
+    const cloudConcepts = days.filter((d) => d.domain === 'cloud-concepts').length;
+    const architectureServices = days.filter((d) => d.domain === 'architecture-services').length;
+    const managementGovernance = days.filter((d) => d.domain === 'management-governance').length;
+
+    return {
+      all,
+      completed,
+      pending,
+      cloudConcepts,
+      architectureServices,
+      managementGovernance,
+    };
+  }, [days]);
+
+  // Filtered days list
+  const filteredDays = useMemo(() => {
+    return days.filter((day) => {
+      if (currentFilter === 'all') return true;
+      if (currentFilter === 'pending') return day.status !== 'completed';
+      if (currentFilter === 'completed') return day.status === 'completed';
+      if (currentFilter === 'cloud-concepts') return day.domain === 'cloud-concepts';
+      if (currentFilter === 'architecture-services') return day.domain === 'architecture-services';
+      if (currentFilter === 'management-governance') return day.domain === 'management-governance';
+      return true;
+    });
+  }, [days, currentFilter]);
+
+  // Calculate overall readiness score for navbar
+  const readinessScore = useMemo(() => {
+    if (days.length === 0) return 0;
+    const cloudDays = days.filter((d) => d.domain === 'cloud-concepts');
+    const archDays = days.filter((d) => d.domain === 'architecture-services');
+    const mgmtDays = days.filter((d) => d.domain === 'management-governance');
+
+    const cloudP = cloudDays.length
+      ? (cloudDays.filter((d) => d.status === 'completed').length / cloudDays.length) * 100
+      : 0;
+    const archP = archDays.length
+      ? (archDays.filter((d) => d.status === 'completed').length / archDays.length) * 100
+      : 0;
+    const mgmtP = mgmtDays.length
+      ? (mgmtDays.filter((d) => d.status === 'completed').length / mgmtDays.length) * 100
+      : 0;
+
+    return Math.min(100, Math.round(cloudP * 0.275 + archP * 0.375 + mgmtP * 0.35));
+  }, [days]);
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
+        <div className="flex items-center gap-3">
+          <RefreshCw className="w-5 h-5 animate-spin text-sky-400" />
+          <span className="text-sm">Loading AZ-900 Study Vibe...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-sky-500/30 selection:text-sky-200">
+      {/* Top Navigation */}
+      <Navbar
+        onOpenConfigure={() => setShowOnboarding(true)}
+        onLoadJudgeDemo={handleLoadJudgeDemo}
+        onResetPlan={handleResetPlan}
+        readinessScore={readinessScore}
+        completedCount={filterCounts.completed}
+        totalDays={days.length}
+      />
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* View 1: Onboarding Wizard (Modal or Page view) */}
+        {showOnboarding ? (
+          <div className="animate-in fade-in zoom-in-95 duration-200">
+            <OnboardingWizard
+              initialPreferences={preferences}
+              onGeneratePlan={handleGeneratePlan}
+              onLoadJudgeDemo={handleLoadJudgeDemo}
+              onClose={() => setShowOnboarding(false)}
+              isExistingPlan={days.length > 0 && preferences.hasCompletedOnboarding}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          </div>
+        ) : (
+          /* View 2: Interactive Study Dashboard */
+          <div className="space-y-8 animate-in fade-in duration-300">
+            {/* A. Top Executive KPI & Readiness Header */}
+            <ReadinessHeader
+              days={days}
+              preferences={preferences}
+              onRebalance={handleRebalance}
+              isRebalancing={isRebalancing}
+            />
+
+            {/* B. Filter Bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                  <span>Daily Action Milestones</span>
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    {filteredDays.length} of {days.length} Days Visible
+                  </span>
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                  Bite-sized micro-learning with hands-on labs and active recall drills.
+                </p>
+              </div>
+
+              <FilterBar
+                currentFilter={currentFilter}
+                onSelectFilter={setCurrentFilter}
+                counts={filterCounts}
+              />
+            </div>
+
+            {/* Timeline of Bite-Sized Daily Action Cards */}
+            <div className="space-y-6">
+              {filteredDays.length === 0 ? (
+                <div className="p-12 text-center rounded-2xl glass-card border border-slate-800 space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-base font-bold text-white">No Days Match This Filter</h3>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Try switching filters or check &ldquo;All Days&rdquo; to view your entire roadmap.
+                  </p>
+                  <button
+                    onClick={() => setCurrentFilter('all')}
+                    className="px-4 py-2 rounded-lg bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 text-xs font-semibold transition-colors"
+                  >
+                    View All 7 Days
+                  </button>
+                </div>
+              ) : (
+                filteredDays.map((day) => (
+                  <DailyTaskCard
+                    key={day.id}
+                    day={day}
+                    onToggleComplete={handleToggleComplete}
+                    onUpdateUserAnswer={handleUpdateUserAnswer}
+                    onToggleRevealAnswer={handleToggleRevealAnswer}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* Floating Toast Notification */}
+      {toastInfo && toastInfo.show && (
+        <Toast
+          message={toastInfo.title}
+          subMessage={toastInfo.sub}
+          onClose={() => setToastInfo(null)}
+        />
+      )}
+
+      {/* Subtle Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+            <span>AZ-900 Vibe Planner • Microsoft Azure Certified Preparation Hub</span>
+          </div>
+          <div className="flex items-center gap-4 text-slate-400">
+            <a
+              href="https://learn.microsoft.com/en-us/credentials/certifications/azure-fundamentals/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-sky-400 transition-colors"
+            >
+              Official Study Guide
+            </a>
+            <span>•</span>
+            <button
+              onClick={handleLoadJudgeDemo}
+              className="hover:text-amber-400 transition-colors"
+            >
+              Demo Preset
+            </button>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
