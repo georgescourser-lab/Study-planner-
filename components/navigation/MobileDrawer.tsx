@@ -3,9 +3,10 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Cloud, X, Settings, ShieldCheck } from 'lucide-react';
+import { Cloud, X, Settings, ShieldCheck, LogIn, LogOut } from 'lucide-react';
 import { NAV_ITEMS } from './nav-config';
 import { NavItem } from './NavItem';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onOpenSettings,
 }) => {
   const pathname = usePathname();
+  const { user, openAuthModal, signOut } = useAuth();
 
   // Escape key listener to close drawer
   useEffect(() => {
@@ -110,8 +112,47 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
           </div>
         </div>
 
-        {/* Bottom Section: Settings & Disclaimer */}
+        {/* Bottom Section: Auth, Settings & Disclaimer */}
         <div className="p-4 border-t border-slate-800 bg-[#070b13] space-y-3">
+          {user ? (
+            <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  {(user.fullName || user.email).slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white truncate">
+                    {user.fullName || user.email.split('@')[0]}
+                  </p>
+                  <p className="text-[10px] text-slate-400 truncate">
+                    {user.isDemo ? 'Demo Student' : 'Azure Candidate'}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={signOut}
+                title="Sign Out"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openAuthModal('signin');
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 text-xs font-semibold transition-all"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Sign In / Sign Up</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => {
