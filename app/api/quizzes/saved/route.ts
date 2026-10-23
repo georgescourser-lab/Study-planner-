@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSavedQuizzesFromSupabase, isSupabaseConfigured } from '@/lib/supabase';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
   try {
     if (!isSupabaseConfigured()) {
