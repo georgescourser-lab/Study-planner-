@@ -3,9 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Cloud, Settings } from 'lucide-react';
+import { Cloud, Settings, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { NAV_ITEMS } from './nav-config';
 import { NavItem } from './NavItem';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   onOpenSettings: () => void;
@@ -13,6 +14,21 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
   const pathname = usePathname();
+  const { user, openAuthModal, signOut } = useAuth();
+
+  const getInitials = (name?: string, email?: string) => {
+    if (name) {
+      const parts = name.trim().split(' ');
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return name.slice(0, 2).toUpperCase();
+    }
+    if (email) {
+      return email.slice(0, 2).toUpperCase();
+    }
+    return 'AZ';
+  };
 
   return (
     <aside
@@ -25,7 +41,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
           href="/"
           className="flex items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg p-1"
         >
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500 text-slate-950 font-bold">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/20">
             <Cloud className="w-4 h-4 text-slate-950" aria-hidden="true" />
           </div>
 
@@ -60,15 +76,57 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
         </nav>
       </div>
 
-      {/* Bottom Section: Settings */}
-      <div className="p-3 border-t border-slate-800/80 bg-[#070b13]">
+      {/* Bottom Section: User Auth & Settings */}
+      <div className="p-3 border-t border-slate-800/80 bg-[#070b13] space-y-2">
+        {/* User Account / Sign In State */}
+        {user ? (
+          <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800/80 flex items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
+                {getInitials(user.fullName, user.email)}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-white truncate">
+                  {user.fullName || user.email.split('@')[0]}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <p className="text-[10px] text-slate-400 truncate">
+                    {user.isDemo ? 'Demo Student' : 'Azure Candidate'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={signOut}
+              title="Sign Out"
+              aria-label="Sign out of account"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800/60 transition-colors shrink-0"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => openAuthModal('signin')}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 hover:text-sky-300 text-xs font-semibold transition-all hover:scale-[1.01]"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Sign In / Sign Up</span>
+          </button>
+        )}
+
+        {/* Settings button */}
         <button
           type="button"
           onClick={onOpenSettings}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors group outline-none"
+          className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors group outline-none"
         >
           <div className="flex items-center gap-2">
-            <Settings className="w-4 h-4 text-slate-500 group-hover:text-sky-400 transition-colors" />
+            <Settings className="w-3.5 h-3.5 text-slate-500 group-hover:text-sky-400 transition-colors" />
             <span>Settings</span>
           </div>
           <span className="text-[10px] text-slate-600">Preferences</span>
