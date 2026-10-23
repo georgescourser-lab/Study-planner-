@@ -22,9 +22,11 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
         href="/"
         className="flex items-center gap-2 outline-none rounded-lg"
       >
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-sky-500 text-slate-950 font-bold">
-          <Cloud className="w-3.5 h-3.5 text-slate-950" aria-hidden="true" />
-        </div>
+        <img
+          src="/logo.svg"
+          alt="CloudPrep Logo"
+          className="w-7 h-7 object-contain"
+        />
 
         <span className="font-bold text-sm tracking-tight text-white">
           CloudPrep <span className="text-sky-400 font-semibold">AZ-900</span>

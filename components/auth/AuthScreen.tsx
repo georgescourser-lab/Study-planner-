@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  Cloud,
   Lock,
   Mail,
   User as UserIcon,
@@ -13,10 +12,6 @@ import {
   ShieldCheck,
   AlertCircle,
   CheckCircle,
-  CalendarDays,
-  HelpCircle,
-  Layers,
-  Bot,
   Sparkles,
   ExternalLink,
   Check,
@@ -79,50 +74,21 @@ export const AuthScreen: React.FC = () => {
     }
   };
 
-  const overviewFeatures = [
-    {
-      icon: CalendarDays,
-      iconColor: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
-      title: 'Adaptive Study Roadmap',
-      description:
-        'Daily customized milestones calibrated to your target exam date with automatic catch-up rebalancing.',
-    },
-    {
-      icon: HelpCircle,
-      iconColor: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
-      title: 'Practice Exam Quizzes',
-      description:
-        'Realistic scenario questions covering Cloud Concepts, Architecture, and Governance with instant explanations.',
-    },
-    {
-      icon: Layers,
-      iconColor: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-      title: 'Active Recall Flashcards',
-      description:
-        'High-yield definitions, SLAs, and cloud architectural comparisons with smooth keyboard navigation.',
-    },
-    {
-      icon: Bot,
-      iconColor: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-      title: 'AI Azure Study Buddy',
-      description:
-        'Instant answers with clear analogies, real-world case studies, and hands-on Azure CLI sandbox guidance.',
-    },
-  ];
-
   return (
     <div className="min-h-screen w-full bg-[#070b13] text-slate-100 relative overflow-hidden flex flex-col justify-between">
       {/* Background ambient lighting */}
       <div className="absolute top-10 left-1/4 -translate-x-1/2 w-[600px] h-[350px] bg-sky-500/10 blur-[130px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[500px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* Top Header */}
+      {/* Top Header with official logo */}
       <header className="w-full border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/20">
-              <Cloud className="w-4 h-4 text-slate-950" />
-            </div>
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.svg"
+              alt="CloudPrep AZ-900 Logo"
+              className="w-9 h-9 object-contain"
+            />
             <div className="flex flex-col">
               <span className="font-bold text-sm tracking-tight text-white">
                 CloudPrep <span className="text-sky-400">AZ-900</span>
@@ -146,13 +112,13 @@ export const AuthScreen: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Landing Area: Overview on Left, Authentication beside it on Right */}
+      {/* Main Landing Area: Overview & Study Buddy on Left, Authentication on Right */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex items-center">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* ========================================================= */}
-          {/* LEFT COLUMN: Overview of the Website                      */}
+          {/* LEFT COLUMN: Overview & Study Buddy Photo                 */}
           {/* ========================================================= */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-5">
             {/* Exam Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20">
               <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
@@ -160,7 +126,7 @@ export const AuthScreen: React.FC = () => {
             </div>
 
             {/* Headline */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <h1 className="text-3xl sm:text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">
                 Your personal AI accelerator for the{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400">
@@ -173,35 +139,30 @@ export const AuthScreen: React.FC = () => {
               </p>
             </div>
 
-            {/* Feature Overview Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
-              {overviewFeatures.map((feat) => {
-                const Icon = feat.icon;
-                return (
-                  <div
-                    key={feat.title}
-                    className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700/80 transition-all hover:bg-slate-900/90"
-                  >
-                    <div className="flex items-center gap-2.5 mb-2">
-                      <div
-                        className={`w-7 h-7 rounded-lg border flex items-center justify-center shrink-0 ${feat.iconColor}`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <h2 className="text-xs font-semibold text-white">
-                        {feat.title}
-                      </h2>
-                    </div>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
-                      {feat.description}
-                    </p>
-                  </div>
-                );
-              })}
+            {/* AI Study Buddy Picture (Replaces the wordy 4-card grid) */}
+            <div className="relative rounded-2xl overflow-hidden border border-slate-800/90 bg-gradient-to-br from-slate-900/90 to-slate-950/90 shadow-2xl group max-w-xl">
+              <div className="relative w-full overflow-hidden p-2 bg-slate-950/50 flex items-center justify-center">
+                <img
+                  src="/study-buddy.png"
+                  alt="AI Azure Study Buddy"
+                  className="w-full max-h-[320px] object-contain rounded-xl transition-transform duration-500 group-hover:scale-[1.01]"
+                />
+              </div>
+              <div className="px-4 py-2.5 border-t border-slate-800/80 bg-slate-900/80 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs font-semibold text-white">
+                    AI Azure Study Buddy & Interactive Sandbox
+                  </span>
+                </div>
+                <span className="text-[11px] text-sky-400 font-medium">
+                  Active Assistant
+                </span>
+              </div>
             </div>
 
             {/* Trust Points */}
-            <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-slate-400">
+            <div className="pt-1 flex flex-wrap items-center gap-4 text-xs text-slate-400">
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-400" />
                 <span>2026 Aligned Curriculum</span>
@@ -378,7 +339,7 @@ export const AuthScreen: React.FC = () => {
                   ) : (
                     <>
                       <span>{authMode === 'signin' ? 'Sign In to Suite' : 'Create Study Account'}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
