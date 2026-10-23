@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AZ-900 Vibe Planner — Project Implementation Plan</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm 14mm 14mm;
+      @bottom-right {
+        content: counter(page);
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.5;
+      color: #0f172a;
+      background: #ffffff;
+      padding: 0;
+    }
+
+    .cover {
+      page-break-after: always;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 85vh;
+      padding: 30px 10px;
+    }
+
+    .badge-primary {
+      display: inline-block;
+      font-size: 8.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #0284c7;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 20px;
+    }
+
+    h1.doc-title {
+      font-size: 26pt;
+      font-weight: 900;
+      line-height: 1.15;
+      color: #0f172a;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .doc-subtitle {
+      font-size: 12pt;
+      color: #475569;
+      margin-bottom: 30px;
+      line-height: 1.4;
+      max-width: 600px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      padding: 18px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      max-width: 580px;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .meta-label {
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 3px;
+    }
+
+    .meta-value {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .section-title {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #0f172a;
+      border-bottom: 2px solid #0284c7;
+      padding-bottom: 5px;
+      margin-top: 22px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 5px;
+      height: 16px;
+      background: #0284c7;
+      border-radius: 2px;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 12px;
+      margin-bottom: 5px;
+    }
+
+    p {
+      margin-bottom: 8px;
+      color: #334155;
+    }
+
+    ul, ol {
+      margin-left: 18px;
+      margin-bottom: 10px;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 3px;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px 0;
+      font-size: 8.5pt;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    .callout {
+      background: #f0fdf4;
+      border-left: 4px solid #16a34a;
+      padding: 9px 12px;
+      border-radius: 0 6px 6px 0;
+      margin: 10px 0;
+      font-size: 8.5pt;
+      color: #166534;
+    }
+
+    .callout-amber {
+      background: #fffbeb;
+      border-left: 4px solid #d97706;
+      color: #92400e;
+    }
+
+    .callout-sky {
+      background: #f0f9ff;
+      border-left: 4px solid #0284c7;
+      color: #075985;
+    }
+
+    .domain-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+    }
+
+    .badge-cloud { background: #e0f2fe; color: #0369a1; }
+    .badge-arch { background: #fef3c7; color: #b45309; }
+    .badge-gov { background: #dcfce7; color: #15803d; }
+    .badge-rev { background: #f3e8ff; color: #7e22ce; }
+
+    .phase-card {
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .phase-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 3px;
+    }
+
+    .phase-title {
+      font-weight: 800;
+      color: #0f172a;
+      font-size: 10pt;
+    }
+
+    .status-tag {
+      font-size: 7pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 9999px;
+    }
+
+    .status-complete { background: #dcfce7; color: #166534; }
+    .status-progress { background: #dbeafe; color: #1e40af; }
+
+    .footer {
+      margin-top: 18px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+      font-size: 7.5pt;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover">
+    <span class="badge-primary">Microsoft Certified: Azure Fundamentals</span>
+    <h1 class="doc-title">AZ-900 Vibe Planner<br>Full Project Implementation Plan</h1>
+    <p class="doc-subtitle">
+      An AI-powered adaptive study platform designed to accelerate candidate exam readiness through personalized schedules, active recall micro-drills, and dynamic workload re-balancing.
+    </p>
+
+    <div class="meta-grid">
+      <div class="meta-item">
+        <span class="meta-label">Project Name</span>
+        <span class="meta-value">AZ-900 Vibe Planner (CloudPrep AI)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Target Examination</span>
+        <span class="meta-value">Microsoft Azure Fundamentals (AZ-900)</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Architecture</span>
+        <span class="meta-value">Next.js 16 + React 19 + TypeScript + Supabase + GenAI</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Document Version</span>
+        <span class="meta-value">v1.2 — Production Release & Integration</span>
+      </div>
+    </div>
+
+    <div class="callout callout-sky">
+      <strong>Executive Brief:</strong> This document outlines the end-to-end technical architecture, exam syllabus mapping, implementation phases, backend API routes, UI/UX interaction workflows, and testing strategy for the AZ-900 Vibe Planner suite.
+    </div>
+  </div>
+
+  <!-- SECTION 1: EXECUTIVE SUMMARY -->
+  <div class="page-break"></div>
+  <h2 class="section-title">1. Executive Summary & Core Objectives</h2>
+  
+  <p>
+    The <strong>AZ-900 Vibe Planner</strong> is a purpose-built exam preparation command center designed to eliminate the friction, study burnout, and schedule rigidity commonly experienced by cloud certification candidates. Instead of static checklists or unstructured video courses, the platform uses an intelligent 3-tier micro-learning model combined with a reactive <em>"Life Happens" Re-balancer</em>.
+  </p>
+
+  <h3>Key Success Metrics & Pillars</h3>
+  <ul>
+    <li><strong>Syllabus Fidelity:</strong> 100% mapped to Microsoft's official AZ-900 exam objectives and domain percentage weights.</li>
+    <li><strong>Bite-Sized Efficiency:</strong> Structured daily sessions (15–60 mins) broken into 3 actionable blocks: <em>Read & Watch</em> (15m), <em>Hands-On Sandbox</em> (10m), and <em>Active Recall</em> (5m).</li>
+    <li><strong>Adaptive Workload Management:</strong> One-click schedule re-balancing that redistributes missed study sessions across remaining days without moving the candidate's exam deadline.</li>
+    <li><strong>Active Recall Retention:</strong> Integrated knowledge check questions with candidate draft inputs, interactive trainer reveals, and core exam takeaways.</li>
+    <li><strong>Zero-Barrier Instant Demonstration:</strong> Instant judge demo mode pre-populating a realistic 7-day plan with completed metrics and live progress bars.</li>
+  </ul>
+
+  <!-- SECTION 2: OFFICIAL AZ-900 SYLLABUS MAPPING -->
+  <h2 class="section-title">2. Official AZ-900 Exam Domain Weights</h2>
+  <p>
+    The planner weights all readiness calculations, mastery progress bars, and schedule distributions directly according to Microsoft's official exam scoring guidelines:
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Domain Name</th>
+        <th style="width: 15%;">Official Weight</th>
+        <th style="width: 35%;">Key Exam Topics Covered</th>
+        <th style="width: 25%;">Platform Visual Badge</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cloud Concepts</strong></td>
+        <td><strong>25–30%</strong></td>
+        <td>Shared Responsibility Model, IaaS vs PaaS vs SaaS, Public/Private/Hybrid Cloud, CapEx vs OpEx economics.</td>
+        <td><span class="domain-badge badge-cloud">Sky Blue Badge (25–30%)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Azure Architecture & Services</strong></td>
+        <td><strong>35–40%</strong><br><small style="color:#b45309;font-weight:700;">★ Highest Weight</small></td>
+        <td>Regions, Availability Zones, Region Pairs, Compute (VMs, Scale Sets, App Services, Functions, ACI/AKS), Networking (VNets, NSGs, ExpressRoute), Storage Tiers (Hot/Cool/Archive, LRS/ZRS/GRS), Databases.</td>
+        <td><span class="domain-badge badge-arch">Amber Badge (35–40% High Priority)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Azure Management & Governance</strong></td>
+        <td><strong>30–35%</strong></td>
+        <td>Microsoft Entra ID, Zero Trust Architecture, MFA, RBAC permissions, Azure Policy, Resource Locks, Azure Advisor, Microsoft Defender for Cloud.</td>
+        <td><span class="domain-badge badge-gov">Emerald Badge (30–35%)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Final Review, SLAs & Pricing</strong></td>
+        <td><strong>Composite & Readiness</strong></td>
+        <td>Azure Pricing Calculator, TCO Calculator, Cost Management & Budgets, Service Level Agreements (SLAs), Composite SLA math, Mock Exam Drills.</td>
+        <td><span class="domain-badge badge-rev">Purple Badge (Readiness Drill)</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 3: TECHNICAL ARCHITECTURE -->
+  <div class="page-break"></div>
+  <h2 class="section-title">3. System Architecture & Tech Stack</h2>
+
+  <p>
+    The platform is built using a modern full-stack TypeScript architecture optimized for high performance, edge routing, offline fault-tolerance, and AI integration.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 22%;">Tier</th>
+        <th style="width: 28%;">Technology</th>
+        <th style="width: 50%;">Role & Responsibilities</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Frontend Framework</strong></td>
+        <td><strong>Next.js 16 (App Router) + React 19</strong></td>
+        <td>Server components for SEO & static pages; interactive client components for real-time reactivity and local state.</td>
+      </tr>
+      <tr>
+        <td><strong>Language</strong></td>
+        <td><strong>TypeScript 5</strong></td>
+        <td>Strict type definitions across all study plan models, AI generators, API contracts, and user preferences.</td>
+      </tr>
+      <tr>
+        <td><strong>Styling & Design System</strong></td>
+        <td><strong>Tailwind CSS v4 + Glassmorphism</strong></td>
+        <td>Deep slate dark dashboard (#0B0F19), Azure Blue accent (#0078D4), backdrop-filter glass panels, custom responsive grids.</td>
+      </tr>
+      <tr>
+        <td><strong>Micro-Interactions</strong></td>
+        <td><strong>canvas-confetti + Lucide Icons</strong></td>
+        <td>Multi-burst celebration confetti upon completing study days; full iconography across Azure services.</td>
+      </tr>
+      <tr>
+        <td><strong>State & Persistence</strong></td>
+        <td><strong>Local Storage + Supabase Client</strong></td>
+        <td>Dual-layer persistence: immediate client-side offline storage backed by Supabase cloud storage synchronization.</td>
+      </tr>
+      <tr>
+        <td><strong>AI Engine</strong></td>
+        <td><strong>Google Gemini SDK (@google/genai) + OpenAI SDK</strong></td>
+        <td>Dynamic plan synthesis, domain-weighted schedule adaptation, and real-time AI Study Buddy tutoring.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Application Navigation Structure</h3>
+  <ul>
+    <li><code>/</code> — Executive Command Center (KPIs, days countdown, readiness gauge, feature quick links).</li>
+    <li><code>/planner</code> — Interactive Study Planner (Onboarding wizard, filter tabs, 7-day micro-learning cards, re-balancer).</li>
+    <li><code>/quizzes</code> — Timed interactive practice exam questions with domain category filters and score tracking.</li>
+    <li><code>/flashcards</code> — Active recall flip cards for high-yield exam facts (SLA math, redundancy tiers, cloud models).</li>
+    <li><code>/study-buddy</code> — AI Azure tutor providing tailored analogies and exam trap explanations.</li>
+    <li><code>/readiness</code> — Detailed domain analytics, radar mastery bars, and exam-day readiness checklist.</li>
+    <li><code>/settings</code> — Candidate exam target date, study capacity, and cloud synchronization controls.</li>
+  </ul>
+
+  <!-- SECTION 4: DETAILED COMPONENT ARCHITECTURE -->
+  <div class="page-break"></div>
+  <h2 class="section-title">4. Core Feature & Component Specifications</h2>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <span class="phase-title">Feature 1: 30-Second Smart Onboarding Wizard</span>
+      <span class="status-tag status-complete">Implemented</span>
+    </div>
+    <p><strong>Component:</strong> <code>components/OnboardingWizard.tsx</code></p>
+    <ul>
+      <li><strong>Target Exam Date Picker:</strong> Real-time dynamic calculation of <em>"X Days Remaining"</em>.</li>
+      <li><strong>Study Capacity Selector:</strong> Interactive pill buttons for 15, 30, 45, and 60+ minutes per day with a toggle for <em>"2x time on weekends"</em>.</li>
+      <li><strong>Domain Confidence Sliders:</strong> 1-to-5 scale range sliders for Cloud Concepts, Architecture & Services (highlighted as high priority), and Management & Governance.</li>
+      <li><strong>AI Synthesis Multi-Step Loader:</strong> 4-step progressive animation demonstrating domain analysis and curriculum customization before revealing the roadmap.</li>
+      <li><strong>Instant Judge Demo CTA:</strong> One-click load of a pre-populated plan with Day 1 & Day 2 completed for instant showcase.</li>
+    </ul>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <span class="phase-title">Feature 2: Executive KPI Header & "Life Happens" Re-balancer</span>
+      <span class="status-tag status-complete">Implemented</span>
+    </div>
+    <p><strong>Component:</strong> <code>components/ReadinessHeader.tsx</code></p>
+    <ul>
+      <li><strong>Countdown Card:</strong> Prominent numerical countdown to candidate exam date.</li>
+      <li><strong>Weighted Readiness Score (%):</strong> Real-time circular SVG gauge applying official domain weights (27.5% + 37.5% + 32.5% + 2.5%).</li>
+      <li><strong>Domain Mastery Progress:</strong> 3 distinct progress bars with domain badges and percentage indicators.</li>
+      <li><strong>The "Life Happens" Re-balancer:</strong> When triggered, detects missed sessions, smoothly redistributes remaining workload forward, updates card status to <code>rebalanced</code>, and presents an interactive toast.</li>
+    </ul>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-header">
+      <span class="phase-title">Feature 3: Micro-Learning Daily Action Cards</span>
+      <span class="status-tag status-complete">Implemented</span>
+    </div>
+    <p><strong>Component:</strong> <code>components/DailyTaskCard.tsx</code></p>
+    <ul>
+      <li><strong>Step 1: Read & Watch (15m):</strong> Objective statement paired with direct <em>"Search on MS Learn ↗"</em> linking directly to official Microsoft documentation.</li>
+      <li><strong>Step 2: Hands-On Sandbox (10m):</strong> Step-by-step portal exercises (e.g. creating NSG rules, comparing VM sizes, configuring resource locks).</li>
+      <li><strong>Step 3: Active Recall Checkpoint (5m):</strong> Exam-style question, draft input box with quick save, and a reveal toggle that unveils trainer explanations and key exam takeaways.</li>
+      <li><strong>Card Footer Toggle:</strong> <em>"Mark Day Complete ✅"</em> with celebratory multi-burst confetti and automatic recalculation of overall readiness metrics.</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 5: IMPLEMENTATION PHASES -->
+  <div class="page-break"></div>
+  <h2 class="section-title">5. Multi-Phase Implementation Roadmap</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 12%;">Phase</th>
+        <th style="width: 25%;">Milestone Focus</th>
+        <th style="width: 45%;">Deliverables & Scope</th>
+        <th style="width: 18%;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Phase 1</strong></td>
+        <td>Project Foundation & Design System</td>
+        <td>Next.js 16 setup, Tailwind CSS v4 design tokens, glassmorphism CSS utilities, Azure color palette, Lucide icon library.</td>
+        <td><span class="status-tag status-complete">Completed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Phase 2</strong></td>
+        <td>Core Study Planner & Onboarding</td>
+        <td>Interactive Onboarding Wizard, 7-day realistic mock curriculum, domain weight sliders, filter bar, daily action cards, confetti micro-interactions.</td>
+        <td><span class="status-tag status-complete">Completed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Phase 3</strong></td>
+        <td>Dynamic Re-balancer & Persistence</td>
+        <td>"Life Happens" redistribution algorithm, localStorage state sync, status transitions (completed, up-next, pending, rebalanced).</td>
+        <td><span class="status-tag status-complete">Completed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Phase 4</strong></td>
+        <td>Command Center & Multi-Page Suite</td>
+        <td>Dashboard overview page (`/`), flashcards module (`/flashcards`), practice quizzes (`/quizzes`), readiness analytics (`/readiness`), settings (`/settings`).</td>
+        <td><span class="status-tag status-complete">Completed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Phase 5</strong></td>
+        <td>AI Study Buddy & Backend API</td>
+        <td>API endpoints (`/api/generate-plan`, `/api/tasks/[id]`, `/api/rebalance`), Google Gemini & OpenAI integrations, AI Study Buddy chat (`/study-buddy`).</td>
+        <td><span class="status-tag status-complete">Completed</span></td>
+      </tr>
+      <tr>
+        <td><strong>Phase 6</strong></td>
+        <td>Cloud DB Sync & Polish</td>
+        <td>Supabase task synchronization, offline-first fallback hardening, mobile drawer navigation, comprehensive testing.</td>
+        <td><span class="status-tag status-complete">Completed</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 6: QUALITY ASSURANCE & TESTING -->
+  <h2 class="section-title">6. Quality Assurance & Verification Matrix</h2>
+
+  <div class="callout callout-amber">
+    <strong>Verification Standard:</strong> All production builds must pass with zero TypeScript errors, zero ESLint warnings, and 100% responsive layout across mobile (375px), tablet (768px), and desktop (1280px+).
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Verification Area</th>
+        <th style="width: 45%;">Test Method</th>
+        <th style="width: 30%;">Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>TypeScript Build</strong></td>
+        <td><code>npm run build</code> executing Turbopack typechecking and route compilation across all 13 routes.</td>
+        <td><strong>Passed (0 Errors)</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Onboarding Flow</strong></td>
+        <td>Browser subagent automated testing: date picker, capacity pills, domain confidence sliders, judge demo loader.</td>
+        <td><strong>Verified & Clickable</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Re-balancer Reaction</strong></td>
+        <td>Simulated missed study day: verification of pending day detection, date offset, and toast notification appearance.</td>
+        <td><strong>Verified & Clickable</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Active Recall Toggle</strong></td>
+        <td>Text input persistence, trainer explanation reveal, key takeaway callout.</td>
+        <td><strong>Verified & Clickable</strong></td>
+      </tr>
+      <tr>
+        <td><strong>State Persistence</strong></td>
+        <td>Browser refresh test verifying state preservation across page reloads via localStorage.</td>
+        <td><strong>Verified</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>AZ-900 Vibe Planner • Implementation & Architecture Plan</span>
+    <span>Confidential • Prepared for Academic & Certification Showcase</span>
+  </div>
+
+</body>
+</html>
