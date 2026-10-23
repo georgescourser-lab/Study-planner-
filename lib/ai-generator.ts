@@ -385,28 +385,41 @@ export async function generateStudyPlanWithAI(options: GeneratePlanOptions): Pro
 
   // 1. Try Google Gemini SDK if key provided
   if (geminiApiKey) {
-    try {
-      const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.3,
-        },
-      });
+    const candidateModels = ['gemini-3-flash-preview', 'gemini-3.8-flash', 'gemini-3.5-flash'];
+    for (const modelName of candidateModels) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.3,
+          },
+        });
 
-      const responseText = response.text || '';
-      const parsed = JSON.parse(responseText);
+        const responseText = response.text || '';
+        let cleanText = responseText.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+        let parsed: any = null;
+        try {
+          parsed = JSON.parse(cleanText);
+        } catch {
+          const s = cleanText.indexOf('{');
+          const e = cleanText.lastIndexOf('}');
+          if (s !== -1 && e > s) {
+            parsed = JSON.parse(cleanText.substring(s, e + 1));
+          }
+        }
 
-      if (parsed && Array.isArray(parsed.tasks) && parsed.tasks.length > 0) {
-        return {
-          tasks: parsed.tasks,
-          source: 'gemini',
-        };
+        if (parsed && Array.isArray(parsed.tasks) && parsed.tasks.length > 0) {
+          return {
+            tasks: parsed.tasks,
+            source: 'gemini',
+          };
+        }
+      } catch (err) {
+        console.warn(`Google Gemini (${modelName}) issue, trying next:`, err);
       }
-    } catch (err) {
-      console.warn('Google Gemini generation encountered an issue, attempting fallback:', err);
     }
   }
 
