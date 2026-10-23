@@ -9,11 +9,8 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  ShieldCheck,
   AlertCircle,
   CheckCircle,
-  Sparkles,
-  ExternalLink,
   Check,
 } from 'lucide-react';
 
@@ -80,27 +77,16 @@ export const AuthScreen: React.FC = () => {
       <div className="absolute top-10 left-1/4 -translate-x-1/2 w-[600px] h-[350px] bg-sky-500/10 blur-[130px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[500px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* Top Header with official logo */}
+      {/* Top Header with prominent physical logo */}
       <header className="w-full border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
           <div className="flex items-center">
             <img
               src="/logo.svg"
               alt="CloudPrep Logo"
-              className="h-8 sm:h-9 w-auto object-contain transition-transform hover:scale-105"
+              className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-transform hover:scale-105 filter drop-shadow-[0_4px_16px_rgba(56,189,248,0.35)]"
             />
           </div>
-
-          <a
-            href="https://learn.microsoft.com/en-us/credentials/certifications/azure-fundamentals/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-colors border border-transparent hover:border-slate-800"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Official Exam Guide</span>
-            <ExternalLink className="w-3 h-3 text-slate-500" />
-          </a>
         </div>
       </header>
 
@@ -110,51 +96,37 @@ export const AuthScreen: React.FC = () => {
           {/* ========================================================= */}
           {/* LEFT COLUMN: Overview & Study Buddy Photo                 */}
           {/* ========================================================= */}
-          <div className="lg:col-span-7 flex flex-col justify-center space-y-3 xl:space-y-4">
+          <div className="lg:col-span-7 flex flex-col justify-center space-y-4 xl:space-y-5">
             {/* Exam Badge */}
             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20 w-fit">
               <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
               <span>Microsoft Certified: Azure Fundamentals</span>
             </div>
 
-            {/* Headline & Subtitle */}
-            <div className="space-y-1.5">
-              <h1 className="text-2xl sm:text-3xl xl:text-4xl font-extrabold tracking-tight text-white leading-tight">
-                Master your exam preparation with an{' '}
+            {/* Condensed Headline */}
+            <div>
+              <h1 className="text-3xl sm:text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                Master AZ-900 with your{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400">
-                  adaptive AI companion
+                  AI companion
                 </span>
                 .
               </h1>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-xl">
-                Structured modules covering cloud architecture, core Azure services, identity management, and governance with real-time feedback.
-              </p>
             </div>
 
             {/* AI Study Buddy Visual */}
-            <div className="relative rounded-xl overflow-hidden border border-slate-800/80 bg-gradient-to-b from-[#0e1626] to-[#070b14] shadow-xl group w-full max-w-md xl:max-w-lg">
-              <div className="relative w-full aspect-[1275/1233] max-h-[220px] sm:max-h-[250px] xl:max-h-[280px] overflow-hidden flex items-center justify-center p-2 bg-slate-950/60">
+            <div className="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-b from-[#0e1626] to-[#070b14] shadow-2xl shadow-sky-950/40 group w-full max-w-md xl:max-w-lg">
+              <div className="relative w-full aspect-[1275/1233] max-h-[250px] sm:max-h-[290px] xl:max-h-[320px] overflow-hidden flex items-center justify-center p-3 bg-slate-950/60">
                 <img
                   src="/study-buddy.png"
-                  alt="AI Study Buddy"
-                  className="w-full h-full object-contain rounded-lg transition-transform duration-500 group-hover:scale-[1.02]"
+                  alt="Study Buddy"
+                  className="w-full h-full object-contain rounded-xl transition-transform duration-500 group-hover:scale-[1.02]"
                 />
-              </div>
-              <div className="px-3 py-1.5 border-t border-slate-800/80 bg-slate-900/90 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[11px] font-semibold text-slate-200">
-                    AI Study Buddy & Interactive Sandbox
-                  </span>
-                </div>
-                <span className="text-[10px] text-sky-400 font-medium">
-                  Active Assistant
-                </span>
               </div>
             </div>
 
             {/* Trust Points */}
-            <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400 pt-0.5">
+            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-0.5">
               <div className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
                 <span>2026 Curriculum Aligned</span>
@@ -336,12 +308,6 @@ export const AuthScreen: React.FC = () => {
                   )}
                 </button>
               </form>
-
-              {/* Footer note */}
-              <div className="mt-3.5 pt-3 border-t border-slate-800 flex items-center justify-center gap-1.5 text-[10px] text-slate-500">
-                <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                <span>Secured via Supabase Authentication</span>
-              </div>
             </div>
           </div>
         </div>
