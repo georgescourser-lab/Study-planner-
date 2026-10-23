@@ -30,9 +30,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased azure-mesh-bg text-slate-100 min-h-screen selection:bg-sky-500/30 selection:text-sky-200`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased azure-mesh-bg text-slate-800 min-h-screen selection:bg-sky-500/20 selection:text-sky-900 dark:text-slate-100 dark:selection:bg-sky-500/30 dark:selection:text-sky-200`}
       >
         <AppShell>{children}</AppShell>
       </body>

@@ -16,7 +16,7 @@ export const MobileNavbar: React.FC<MobileNavbarProps> = ({
   onOpenSettings,
 }) => {
   return (
-    <header className="flex lg:hidden sticky top-0 z-40 w-full h-14 bg-[#090d16]/95 backdrop-blur-md border-b border-slate-800/80 px-4 items-center justify-between">
+    <header className="flex lg:hidden sticky top-0 z-40 w-full h-14 bg-slate-100/95 dark:bg-[#090d16]/95 backdrop-blur-md border-b border-slate-800/80 px-4 items-center justify-between">
       {/* Brand */}
       <Link
         href="/"

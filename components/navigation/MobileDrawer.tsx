@@ -7,6 +7,7 @@ import { Cloud, X, Settings, ShieldCheck, LogIn, LogOut } from 'lucide-react';
 import { NAV_ITEMS } from './nav-config';
 import { NavItem } from './NavItem';
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeToggleButton } from '@/contexts/ThemeContext';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -60,9 +61,9 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
       />
 
       {/* Drawer Container with slide-in animation */}
-      <div className="fixed top-0 bottom-0 left-0 w-4/5 max-w-xs bg-[#090d16] border-r border-slate-800 flex flex-col z-10 shadow-2xl animate-in slide-in-from-left duration-250">
+      <div className="fixed top-0 bottom-0 left-0 w-4/5 max-w-xs bg-white dark:bg-[#090d16] border-r border-slate-200 dark:border-slate-800 flex flex-col z-10 shadow-2xl animate-in slide-in-from-left duration-250">
         {/* Drawer Header */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200 dark:border-slate-800">
           <Link
             href="/"
             onClick={onClose}
@@ -115,7 +116,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
         </div>
 
         {/* Bottom Section: Auth, Settings & Disclaimer */}
-        <div className="p-4 border-t border-slate-800 bg-[#070b13] space-y-3">
+        <div className="p-4 border-t border-slate-200 bg-slate-50 space-y-3 dark:border-slate-800 dark:bg-[#070b13]">
+          <ThemeToggleButton />
           {user ? (
             <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">

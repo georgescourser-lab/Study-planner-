@@ -8,6 +8,7 @@ import { MobileNavbar } from './MobileNavbar';
 import { MobileDrawer } from './MobileDrawer';
 import { SettingsModal } from './SettingsModal';
 import { Cloud } from 'lucide-react';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ const AppShellInner: React.FC<AppShellProps> = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#070b13] text-slate-400 gap-3">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-500 dark:bg-[#070b13] dark:text-slate-400 gap-3">
         <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/10">
           <Cloud className="w-6 h-6 animate-pulse" />
         </div>
@@ -37,7 +38,7 @@ const AppShellInner: React.FC<AppShellProps> = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100 selection:bg-sky-500/30 selection:text-sky-200 relative">
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-800 selection:bg-sky-500/20 selection:text-sky-900 dark:bg-[#0b0f19] dark:text-slate-100 dark:selection:bg-sky-500/30 dark:selection:text-sky-200 relative">
 
       {/* 3. Main Workspace Layout */}
       <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />
@@ -72,8 +73,10 @@ const AppShellInner: React.FC<AppShellProps> = ({ children }) => {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   return (
-    <AuthProvider>
-      <AppShellInner>{children}</AppShellInner>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppShellInner>{children}</AppShellInner>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };

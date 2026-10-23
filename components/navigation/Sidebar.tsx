@@ -7,6 +7,7 @@ import { Cloud, Settings, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { NAV_ITEMS } from './nav-config';
 import { NavItem } from './NavItem';
 import { useAuth } from '@/contexts/AuthContext';
+import { ThemeToggleButton } from '@/contexts/ThemeContext';
 
 interface SidebarProps {
   onOpenSettings: () => void;
@@ -32,11 +33,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
 
   return (
     <aside
-      className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 xl:w-72 bg-[#090d16] border-r border-slate-800/80 z-30 select-none"
+      className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 xl:w-72 bg-white dark:bg-[#090d16] border-r border-slate-200 dark:border-slate-800/80 z-30 select-none"
       aria-label="Main Navigation"
     >
       {/* Brand Header */}
-      <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-800/80">
+      <div className="h-16 flex items-center gap-3 px-5 border-b border-slate-200 dark:border-slate-800/80">
         <Link
           href="/"
           className="flex items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg p-1"
@@ -79,7 +80,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
       </div>
 
       {/* Bottom Section: User Auth & Settings */}
-      <div className="p-3 border-t border-slate-800/80 bg-[#070b13] space-y-2">
+      <div className="p-3 border-t border-slate-200 bg-slate-50 space-y-2 dark:border-slate-800/80 dark:bg-slate-950">
+        <ThemeToggleButton />
         {/* User Account / Sign In State */}
         {user ? (
           <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800/80 flex items-center justify-between gap-2.5">
