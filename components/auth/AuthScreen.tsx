@@ -85,7 +85,7 @@ export const AuthScreen: React.FC = () => {
             <img
               src="/logo.svg"
               alt="CloudPrep Logo"
-              className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-transform hover:scale-105 filter drop-shadow-[0_4px_16px_rgba(56,189,248,0.35)]"
+              className="h-16 sm:h-[4.5rem] md:h-20 w-auto object-contain transition-transform hover:scale-105 filter drop-shadow-[0_4px_16px_rgba(56,189,248,0.35)]"
             />
           </div>
           <ThemeToggleButton compact />

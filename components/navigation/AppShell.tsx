@@ -19,26 +19,18 @@ const AppShellInner: React.FC<AppShellProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-500 dark:bg-[#070b13] dark:text-slate-400 gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/10">
-          <Cloud className="w-6 h-6 animate-pulse" />
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <span>Verifying CloudPrep session...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
+  if (!user && !isLoading) {
     return <AuthScreen />;
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-slate-800 selection:bg-sky-500/20 selection:text-sky-900 dark:bg-[#0b0f19] dark:text-slate-100 dark:selection:bg-sky-500/30 dark:selection:text-sky-200 relative">
+      {isLoading && (
+        <div className="fixed right-4 top-4 z-50 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-3 py-2 text-xs text-slate-600 shadow-lg dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-300" role="status" aria-live="polite">
+          <span className="h-3 w-3 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+          Checking your session...
+        </div>
+      )}
 
       {/* 3. Main Workspace Layout */}
       <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />
