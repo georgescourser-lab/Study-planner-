@@ -91,12 +91,12 @@ export default function HomePage() {
   return (
     <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800/80">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             AZ-900 Study Overview
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
             Target exam date: {preferences.examDate} • {daysRemaining} days remaining
           </p>
         </div>
@@ -111,11 +111,11 @@ export default function HomePage() {
       </div>
 
       {/* Authenticated Student Status Card */}
-      <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
+      <div className="flex items-center justify-between p-3.5 rounded-xl glass-card border border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center gap-2.5">
           <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-slate-300">
-            Welcome back, <strong className="text-white font-semibold">{user?.fullName || user?.email}</strong>
+          <span className="text-slate-700 dark:text-slate-300">
+            Welcome back, <strong className="text-slate-900 dark:text-white font-semibold">{user?.fullName || user?.email}</strong>
           </span>
         </div>
         <span className="text-[11px] text-sky-400 font-medium">Cloud Sync Active</span>
@@ -124,28 +124,28 @@ export default function HomePage() {
       {/* KPI Stats Row (Clean 3-column layout) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* KPI 1: Days Remaining */}
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div className="p-4 rounded-xl glass-card border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 mb-2">
             <span>Exam Countdown</span>
-            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+            <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-500" />
           </div>
-          <div className="text-2xl font-bold text-white">
-            {daysRemaining} <span className="text-xs font-normal text-slate-400">days left</span>
+          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+            {daysRemaining} <span className="text-xs font-normal text-slate-600 dark:text-slate-400">days left</span>
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">
             Exam target: {preferences.examDate}
           </div>
         </div>
 
         {/* KPI 2: Overall Readiness */}
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div className="p-4 rounded-xl glass-card border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 mb-2">
             <span>Readiness Score</span>
             <Target className="w-3.5 h-3.5 text-sky-400" />
           </div>
-          <div className="text-2xl font-bold text-white flex items-baseline gap-2">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white flex items-baseline gap-2">
             <span>{readinessScore}%</span>
-            <span className="text-xs font-normal text-slate-400">
+            <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
               {readinessScore >= 70 ? 'On track to pass' : 'In progress'}
             </span>
           </div>
@@ -158,15 +158,15 @@ export default function HomePage() {
         </div>
 
         {/* KPI 3: Progress */}
-        <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+        <div className="p-4 rounded-xl glass-card border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 mb-2">
             <span>Completed Topics</span>
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-white">
-            {completedCount} <span className="text-xs font-normal text-slate-400">/ {totalDays} topics</span>
+          <div className="text-2xl font-bold text-slate-900 dark:text-white">
+            {completedCount} <span className="text-xs font-normal text-slate-600 dark:text-slate-400">/ {totalDays} topics</span>
           </div>
-          <div className="text-[11px] text-slate-500 mt-1">
+          <div className="text-[11px] text-slate-500 dark:text-slate-500 mt-1">
             {Math.round((completedCount / Math.max(totalDays, 1)) * 100)}% of roadmap finished
           </div>
         </div>
@@ -174,19 +174,19 @@ export default function HomePage() {
 
       {/* Up Next Topic Card (Clean 1-row focus) */}
       {upNextDay && (
-        <div className="p-4 sm:p-5 rounded-xl bg-slate-900/80 border border-sky-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 rounded-xl bg-white border border-sky-500/30 dark:bg-slate-900/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs">
               <span className="font-semibold text-sky-400">Next Topic</span>
               <span className="text-slate-600">•</span>
-              <span className="text-slate-400">Day {upNextDay.dayNumber}</span>
+              <span className="text-slate-600 dark:text-slate-400">Day {upNextDay.dayNumber}</span>
               <span className="text-slate-600">•</span>
-              <span className="text-slate-400">{upNextDay.estimatedMinutes} mins</span>
+              <span className="text-slate-600 dark:text-slate-400">{upNextDay.estimatedMinutes} mins</span>
             </div>
-            <h2 className="text-base font-semibold text-white">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
               {upNextDay.topicTitle}
             </h2>
-            <p className="text-xs text-slate-400 max-w-2xl line-clamp-1">
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-2xl line-clamp-1">
               {upNextDay.learningBlock.objective}
             </p>
           </div>
@@ -203,7 +203,7 @@ export default function HomePage() {
 
       {/* Study Tools Grid (Clean 4-card compact grid) */}
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-slate-200">
+        <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
           Study Tools
         </h2>
 
@@ -211,17 +211,17 @@ export default function HomePage() {
           {/* Tool 1: Planner */}
           <Link
             href="/planner"
-            className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
+            className="p-4 rounded-xl bg-white/80 border border-slate-200 hover:border-sky-300 hover:bg-white dark:bg-slate-900/40 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center">
                 <CalendarDays className="w-4 h-4" />
               </div>
-              <h3 className="font-semibold text-sm text-white group-hover:text-sky-300 transition-colors">
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white group-hover:text-sky-300 transition-colors">
                 Study Planner
               </h3>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Day-by-day study roadmap with active recall and schedule re-balancer.
             </p>
           </Link>
@@ -229,17 +229,17 @@ export default function HomePage() {
           {/* Tool 2: Quizzes */}
           <Link
             href="/quizzes"
-            className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
+            className="p-4 rounded-xl bg-white/80 border border-slate-200 hover:border-sky-300 hover:bg-white dark:bg-slate-900/40 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
                 <HelpCircle className="w-4 h-4" />
               </div>
-              <h3 className="font-semibold text-sm text-white group-hover:text-amber-300 transition-colors">
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white group-hover:text-amber-300 transition-colors">
                 Practice Quizzes
               </h3>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Multiple-choice practice questions mapped to official AZ-900 topics.
             </p>
           </Link>
@@ -247,17 +247,17 @@ export default function HomePage() {
           {/* Tool 3: Flashcards */}
           <Link
             href="/flashcards"
-            className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
+            className="p-4 rounded-xl bg-white/80 border border-slate-200 hover:border-sky-300 hover:bg-white dark:bg-slate-900/40 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
                 <Layers className="w-4 h-4" />
               </div>
-              <h3 className="font-semibold text-sm text-white group-hover:text-emerald-300 transition-colors">
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white group-hover:text-emerald-300 transition-colors">
                 Flashcards
               </h3>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Quick definition cards covering compute, storage, and identity.
             </p>
           </Link>
@@ -265,17 +265,17 @@ export default function HomePage() {
           {/* Tool 4: AI Study Buddy */}
           <Link
             href="/study-buddy"
-            className="p-4 rounded-xl bg-slate-900/40 border border-slate-800 hover:border-slate-700 hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
+            className="p-4 rounded-xl bg-white/80 border border-slate-200 hover:border-sky-300 hover:bg-white dark:bg-slate-900/40 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-900/70 transition-all flex flex-col justify-between space-y-2 group"
           >
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
                 <Bot className="w-4 h-4" />
               </div>
-              <h3 className="font-semibold text-sm text-white group-hover:text-purple-300 transition-colors">
+              <h3 className="font-semibold text-sm text-slate-900 dark:text-white group-hover:text-purple-300 transition-colors">
                 AI Study Buddy
               </h3>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Ask questions and get concise explanations with Azure analogies.
             </p>
           </Link>
@@ -283,18 +283,18 @@ export default function HomePage() {
       </div>
 
       {/* Domain Mastery Summary (Clean 3-meter row) */}
-      <div className="p-4 sm:p-5 rounded-xl bg-slate-900/40 border border-slate-800 space-y-3">
+      <div className="p-4 sm:p-5 rounded-xl glass-card border border-slate-200 dark:border-slate-800 space-y-3">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-slate-200">Exam Domain Progress</span>
-          <span className="text-slate-500">Official syllabus weights</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-200">Exam Domain Progress</span>
+          <span className="text-slate-500 dark:text-slate-500">Official syllabus weights</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
           {/* Domain 1 */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Cloud Concepts (25-30%)</span>
-              <span className="font-medium text-slate-400">{cloudPct}%</span>
+              <span className="text-slate-700 dark:text-slate-300">Cloud Concepts (25-30%)</span>
+              <span className="font-medium text-slate-600 dark:text-slate-400">{cloudPct}%</span>
             </div>
             <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
               <div className="bg-sky-400 h-full rounded-full" style={{ width: `${cloudPct}%` }} />
@@ -304,8 +304,8 @@ export default function HomePage() {
           {/* Domain 2 */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Architecture & Services (35-40%)</span>
-              <span className="font-medium text-slate-400">{archPct}%</span>
+              <span className="text-slate-700 dark:text-slate-300">Architecture & Services (35-40%)</span>
+              <span className="font-medium text-slate-600 dark:text-slate-400">{archPct}%</span>
             </div>
             <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
               <div className="bg-amber-400 h-full rounded-full" style={{ width: `${archPct}%` }} />
@@ -315,8 +315,8 @@ export default function HomePage() {
           {/* Domain 3 */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Management & Governance (30-35%)</span>
-              <span className="font-medium text-slate-400">{mgmtPct}%</span>
+              <span className="text-slate-700 dark:text-slate-300">Management & Governance (30-35%)</span>
+              <span className="font-medium text-slate-600 dark:text-slate-400">{mgmtPct}%</span>
             </div>
             <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
               <div className="bg-emerald-400 h-full rounded-full" style={{ width: `${mgmtPct}%` }} />

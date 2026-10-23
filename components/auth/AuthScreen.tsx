@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Check,
 } from 'lucide-react';
+import { ThemeToggleButton } from '@/contexts/ThemeContext';
 
 export const AuthScreen: React.FC = () => {
   const { authMode, setAuthMode, signIn, signUp } = useAuth();
@@ -72,13 +73,13 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen w-full bg-[#070b13] text-slate-100 relative lg:overflow-hidden flex flex-col justify-between">
+    <div className="min-h-screen lg:h-screen w-full bg-[#070b13] text-slate-900 dark:text-slate-100 relative lg:overflow-hidden flex flex-col justify-between">
       {/* Background ambient lighting */}
       <div className="absolute top-10 left-1/4 -translate-x-1/2 w-[600px] h-[350px] bg-sky-500/10 blur-[130px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[500px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
       {/* Top Header with prominent physical logo (frameless, no line) */}
-      <header className="w-full bg-[#070b13]/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
+      <header className="w-full bg-[#070b13]/80 dark:bg-[#070b13]/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
           <div className="flex items-center">
             <img
@@ -87,6 +88,7 @@ export const AuthScreen: React.FC = () => {
               className="h-12 sm:h-14 md:h-16 w-auto object-contain transition-transform hover:scale-105 filter drop-shadow-[0_4px_16px_rgba(56,189,248,0.35)]"
             />
           </div>
+          <ThemeToggleButton compact />
         </div>
       </header>
 
@@ -107,7 +109,7 @@ export const AuthScreen: React.FC = () => {
             <div>
               <h1 className="text-3xl sm:text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">
                 Master AZ-900 with your{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-700 via-blue-700 to-indigo-700 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400">
                   AI companion
                 </span>
                 .
@@ -144,9 +146,9 @@ export const AuthScreen: React.FC = () => {
           {/* RIGHT COLUMN: Authentication Beside the Overview          */}
           {/* ========================================================= */}
           <div className="lg:col-span-5 w-full max-w-md mx-auto lg:max-w-none">
-            <div className="bg-[#0c1220]/95 backdrop-blur-xl border border-slate-800/90 rounded-2xl shadow-2xl p-5 sm:p-6">
+            <div className="bg-white/95 dark:bg-[#0c1220]/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800/90 rounded-2xl shadow-2xl p-5 sm:p-6">
               {/* Mode Switch Tabs (Sign In is first option) */}
-              <div className="flex rounded-xl bg-slate-900/90 p-1 border border-slate-800 mb-4">
+              <div className="flex rounded-xl bg-slate-100 dark:bg-slate-900/90 p-1 border border-slate-200 dark:border-slate-800 mb-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -157,7 +159,7 @@ export const AuthScreen: React.FC = () => {
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     authMode === 'signin'
                       ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
                   Sign In
@@ -172,7 +174,7 @@ export const AuthScreen: React.FC = () => {
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                     authMode === 'signup'
                       ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
                   Create Account
@@ -180,10 +182,10 @@ export const AuthScreen: React.FC = () => {
               </div>
 
               <div className="mb-3.5">
-                <h2 className="text-sm font-semibold text-white">
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
                   {authMode === 'signin' ? 'Welcome Back' : 'Create Your Account'}
                 </h2>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5">
                   {authMode === 'signin'
                     ? 'Enter your credentials to resume your progress.'
                     : 'Set up your profile to generate your study schedule.'}
@@ -210,7 +212,7 @@ export const AuthScreen: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-3">
                 {authMode === 'signup' && (
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                    <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Full Name
                     </label>
                     <div className="relative">
@@ -221,14 +223,14 @@ export const AuthScreen: React.FC = () => {
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="e.g. Alex Morgan"
-                        className="w-full bg-slate-900 border border-slate-750 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                       />
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                  <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
                     Email Address
                   </label>
                   <div className="relative">
@@ -239,14 +241,14 @@ export const AuthScreen: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="student@example.com"
-                      className="w-full bg-slate-900 border border-slate-750 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-[11px] font-medium text-slate-300">Password</label>
+                    <label className="text-[11px] font-medium text-slate-700 dark:text-slate-300">Password</label>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
@@ -256,7 +258,7 @@ export const AuthScreen: React.FC = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={authMode === 'signup' ? 'Min 6 characters' : 'Enter your password'}
-                      className="w-full bg-slate-900 border border-slate-750 rounded-xl pl-8 pr-9 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                      className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-9 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                     />
                     <button
                       type="button"
@@ -271,7 +273,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'signup' && (
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-300 mb-1">
+                    <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -282,7 +284,7 @@ export const AuthScreen: React.FC = () => {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Re-enter your password"
-                        className="w-full bg-slate-900 border border-slate-750 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-colors"
                       />
                     </div>
                   </div>
@@ -312,7 +314,7 @@ export const AuthScreen: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-2 sm:py-2.5 shrink-0 border-t border-slate-800/80 bg-[#070b13] text-center text-[11px] text-slate-500">
+      <footer className="w-full py-2 sm:py-2.5 shrink-0 border-t border-slate-200 dark:border-slate-800/80 bg-[#070b13] text-center text-[11px] text-slate-500">
         <p>
           CloudPrep AZ-900 • Unofficial study companion. Microsoft and Azure are trademarks of the Microsoft group of companies.
         </p>
