@@ -68,9 +68,11 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             onClick={onClose}
             className="flex items-center gap-2.5 outline-none"
           >
-            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md">
-              <Cloud className="w-4 h-4" />
-            </div>
+            <img
+              src="/logo.svg"
+              alt="CloudPrep Logo"
+              className="w-8 h-8 object-contain"
+            />
             <span className="font-bold text-base tracking-tight text-white">
               CloudPrep <span className="text-sky-400 font-extrabold">AI</span>
             </span>

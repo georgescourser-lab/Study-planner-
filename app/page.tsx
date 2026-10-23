@@ -20,7 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const STORAGE_KEY = 'az900_vibe_planner_state_v2';
 
-export default function DashboardPage() {
+export default function HomePage() {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_USER_PREFERENCES);
   const [days, setDays] = useState<DayPlan[]>([]);

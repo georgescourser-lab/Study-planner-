@@ -41,9 +41,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
           href="/"
           className="flex items-center gap-2.5 group outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg p-1"
         >
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/20">
-            <Cloud className="w-4 h-4 text-slate-950" aria-hidden="true" />
-          </div>
+          <img
+            src="/logo.svg"
+            alt="CloudPrep Logo"
+            className="w-8 h-8 object-contain"
+          />
 
           <div className="flex flex-col">
             <span className="font-bold text-sm tracking-tight text-white group-hover:text-sky-300 transition-colors">
