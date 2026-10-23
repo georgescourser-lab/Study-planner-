@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: 'CloudPrep AI | AZ-900 Study Suite',
   description:
     'Modern AI-powered Personal Study Planner, Practice Quizzes, and Flashcards for the Microsoft Azure Fundamentals (AZ-900) certification exam.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
