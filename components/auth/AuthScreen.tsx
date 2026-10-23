@@ -77,8 +77,8 @@ export const AuthScreen: React.FC = () => {
       <div className="absolute top-10 left-1/4 -translate-x-1/2 w-[600px] h-[350px] bg-sky-500/10 blur-[130px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[500px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
 
-      {/* Top Header with prominent physical logo */}
-      <header className="w-full border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
+      {/* Top Header with prominent physical logo (frameless, no line) */}
+      <header className="w-full bg-[#070b13]/80 backdrop-blur-md sticky top-0 z-20 shrink-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
           <div className="flex items-center">
             <img
@@ -114,15 +114,13 @@ export const AuthScreen: React.FC = () => {
               </h1>
             </div>
 
-            {/* AI Study Buddy Visual */}
-            <div className="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-b from-[#0e1626] to-[#070b14] shadow-2xl shadow-sky-950/40 group w-full max-w-md xl:max-w-lg">
-              <div className="relative w-full aspect-[1275/1233] max-h-[250px] sm:max-h-[290px] xl:max-h-[320px] overflow-hidden flex items-center justify-center p-3 bg-slate-950/60">
-                <img
-                  src="/study-buddy.png"
-                  alt="Study Buddy"
-                  className="w-full h-full object-contain rounded-xl transition-transform duration-500 group-hover:scale-[1.02]"
-                />
-              </div>
+            {/* AI Study Buddy Illustration (Frameless & Clear) */}
+            <div className="relative w-full max-w-md xl:max-w-lg aspect-[1275/1233] max-h-[260px] sm:max-h-[300px] xl:max-h-[330px] flex items-center justify-start">
+              <img
+                src="/study-buddy.png"
+                alt="Study Buddy"
+                className="w-full h-full object-contain filter drop-shadow-[0_12px_28px_rgba(56,189,248,0.18)] transition-transform duration-500 hover:scale-[1.02]"
+              />
             </div>
 
             {/* Trust Points */}
