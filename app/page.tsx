@@ -24,7 +24,6 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_USER_PREFERENCES);
   const [days, setDays] = useState<DayPlan[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [daysRemaining, setDaysRemaining] = useState(7);
 
   useEffect(() => {
@@ -46,7 +45,6 @@ export default function DashboardPage() {
           const prefs = parsed.preferences || DEFAULT_USER_PREFERENCES;
           setPreferences(prefs);
           calcCountdown(prefs.examDate);
-          setIsLoaded(true);
           return;
         }
       }
@@ -57,7 +55,6 @@ export default function DashboardPage() {
     setDays(generateInitialMockPlan());
     setPreferences(DEFAULT_USER_PREFERENCES);
     calcCountdown(DEFAULT_USER_PREFERENCES.examDate);
-    setIsLoaded(true);
   }, []);
 
   const completedCount = days.filter((d) => d.status === 'completed').length;
@@ -90,14 +87,6 @@ export default function DashboardPage() {
     100,
     Math.round(cloudPct * 0.275 + archPct * 0.375 + mgmtPct * 0.35)
   );
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
-        <div className="w-5 h-5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">

@@ -18,30 +18,29 @@ const AppShellInner: React.FC<AppShellProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // 1. Session verification loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#070b13] text-slate-400 gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/10">
-          <Cloud className="w-6 h-6 animate-pulse" />
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
-          <span>Verifying CloudPrep session...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // 2. Strict Authentication Wall: If not logged in, enforce AuthScreen first!
-  if (!user) {
-    return <AuthScreen />;
-  }
-
-  // 3. User is authenticated: Render the full system
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100 selection:bg-sky-500/30 selection:text-sky-200">
-      {/* Desktop Fixed Sidebar */}
+    <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100 selection:bg-sky-500/30 selection:text-sky-200 relative">
+      {/* 1. Loading Overlay during initial session check */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#070b13] text-slate-400 gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shadow-lg shadow-sky-500/10">
+            <Cloud className="w-6 h-6 animate-pulse" />
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-400">
+            <span className="w-3.5 h-3.5 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+            <span>Verifying CloudPrep session...</span>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Mandatory Authentication Gate Overlay: Prevents unauthenticated access while keeping tree rendered */}
+      {!isLoading && !user && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-[#070b13]">
+          <AuthScreen />
+        </div>
+      )}
+
+      {/* 3. Main Workspace Layout */}
       <Sidebar onOpenSettings={() => setIsSettingsOpen(true)} />
 
       {/* Mobile Top Navbar */}
