@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard,
+  Home,
   CalendarDays,
   HelpCircle,
   Layers,
@@ -19,9 +19,9 @@ export interface NavItemConfig {
 
 export const NAV_ITEMS: NavItemConfig[] = [
   {
-    label: 'Dashboard',
+    label: 'Home',
     href: '/',
-    icon: LayoutDashboard,
+    icon: Home,
     description: 'Exam countdown, readiness overview, and daily focus',
   },
   {
