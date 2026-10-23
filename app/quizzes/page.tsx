@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   HelpCircle,
   CheckCircle2,
@@ -19,6 +20,8 @@ import {
   RefreshCw,
   Eye,
   Check,
+  Trophy,
+  BarChart3,
 } from 'lucide-react';
 import { fireCelebrationConfetti } from '@/lib/confetti';
 import { QuizQuestion } from '@/types/study-plan';
@@ -125,6 +128,7 @@ const SUGGESTED_TOPICS = [
 ];
 
 export default function PracticeQuizzesPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'take-quiz' | 'saved-reviews'>('take-quiz');
   const [questions, setQuestions] = useState<QuizQuestion[]>(DEFAULT_QUESTIONS);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -148,6 +152,7 @@ export default function PracticeQuizzesPage() {
   const [savedQuizzes, setSavedQuizzes] = useState<any[]>([]);
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
   const [reviewingQuiz, setReviewingQuiz] = useState<any | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Keyboard navigation feedback state
   const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -229,6 +234,7 @@ export default function PracticeQuizzesPage() {
     setAnsweredCount(0);
     setUserAnswers(new Array(questions.length).fill(null));
     setSaveStatus(null);
+    setIsCompleted(false);
   }, [questions.length]);
 
   // Global Keyboard Navigation Listener for Live Quiz
@@ -365,6 +371,7 @@ export default function PracticeQuizzesPage() {
         setActiveQuizTitle(`AI Practice Quiz: ${topicToUse}`);
         setQuizSource(data.source);
         setActiveTab('take-quiz');
+        setIsCompleted(false);
         fireCelebrationConfetti();
       }
     } catch (err) {
@@ -435,6 +442,13 @@ export default function PracticeQuizzesPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleCompleteQuiz = () => {
+    if (answeredCount !== questions.length || isCompleted) return;
+    setIsCompleted(true);
+    void handleSaveQuizToDatabase();
+    fireCelebrationConfetti();
   };
 
   const handleDeleteSavedQuiz = async (id: string) => {
@@ -1017,6 +1031,24 @@ export default function PracticeQuizzesPage() {
             </div>
           </div>
 
+          {answeredCount === questions.length && questions.length > 0 && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+              <div className="text-sm text-emerald-200">
+                {isCompleted ? 'Quiz complete. Your result has been added to readiness.' : 'You answered every question. Complete the quiz to record your result.'}
+              </div>
+              {!isCompleted && (
+                <button
+                  type="button"
+                  onClick={handleCompleteQuiz}
+                  disabled={isSaving}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-slate-950 font-bold text-xs transition-colors"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Complete Quiz
+                </button>
+              )}
+            </div>
+          )}
           {/* Keyboard Navigator Bar */}
           <KeyboardNavigatorBar
             title="Quiz Navigator"

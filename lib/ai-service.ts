@@ -258,14 +258,10 @@ User Question/Search Query: "${question}"
 Official AZ-900 Curriculum Context:
 ${contextNotes || 'Focus on official Microsoft Azure Fundamentals objectives.'}
 
-Provide a well-structured, engaging response formatted in Markdown:
-1. **Core Concept Explained**: Explain the concept clearly and concisely. Use a short, memorable analogy (like Pizza-as-a-Service, real estate, airport security, or electricity grid) to make it intuitive.
-2. **Azure Architectural Details**: Highlight key service attributes, boundaries, redundancy, or management features candidates must know.
-3. **Official AZ-900 Exam Trap & Key Tip**: Exactly what Microsoft tests on the exam and how to avoid typical trick questions.
-4. **Hands-On / Portal Pro-Tip**: 1 practical step on where to see or configure this in the Azure Portal or Azure CLI.
-5. **Recommended MS Learn Query**: Exact search keywords for Microsoft Learn documentation.
+Provide a clear, engaging response in plain text. Do not use Markdown symbols such as #, **, backticks, or Markdown tables. Use short section labels on their own lines and simple dash bullets when listing items. Keep the response easy to scan:
+Explain the core concept clearly and concisely, using a short memorable analogy when helpful. Cover the Azure service details and boundaries candidates need to know, the key exam trap or tip, one practical portal or CLI step, and a recommended Microsoft Learn search query.
 
-Keep it encouraging, precise, and directly aligned with the official AZ-900 exam passing score (700/1000).`;
+Use these sections when useful, without numbering them: Core concept, Azure details, Exam tip, Practical step, and Learn more. Keep the answer encouraging, precise, and focused on the AZ-900 exam.`;
 
   try {
     const rawAnswer = await callGemini(systemPrompt, false);

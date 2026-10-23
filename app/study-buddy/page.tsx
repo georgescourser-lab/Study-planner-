@@ -52,6 +52,113 @@ const PRESET_PROMPTS = [
   'What are the minimum retention periods for Azure Blob Storage tiers?',
 ];
 
+type ResponseBlock =
+  | { type: 'paragraph' | 'heading' | 'quote'; text: string }
+  | { type: 'list'; ordered: boolean; items: string[] };
+
+function renderInlineFormatting(text: string): React.ReactNode[] {
+  const tokens = text.split(/(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|\*[^*]+\*|_[^_]+_)/g).filter(Boolean);
+
+  return tokens.map((token, index) => {
+    if ((token.startsWith('**') && token.endsWith('**')) || (token.startsWith('__') && token.endsWith('__'))) {
+      return <strong key={index} className="font-semibold text-white">{token.slice(2, -2)}</strong>;
+    }
+    if (token.startsWith('`') && token.endsWith('`')) {
+      return <code key={index} className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[0.9em] text-sky-200">{token.slice(1, -1)}</code>;
+    }
+    if ((token.startsWith('*') && token.endsWith('*')) || (token.startsWith('_') && token.endsWith('_'))) {
+      return <em key={index}>{token.slice(1, -1)}</em>;
+    }
+    return <React.Fragment key={index}>{token}</React.Fragment>;
+  });
+}
+
+function BuddyResponse({ text }: { text: string }) {
+  const blocks: ResponseBlock[] = [];
+  let paragraph: string[] = [];
+  let list: { ordered: boolean; items: string[] } | null = null;
+
+  const flushParagraph = () => {
+    const content = paragraph.join(' ').trim();
+    if (content) blocks.push({ type: 'paragraph', text: content });
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (list) blocks.push({ type: 'list', ...list });
+    list = null;
+  };
+
+  for (const rawLine of text.replace(/```[\w-]*\s*/g, '').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || /^\s*[-*_]{3,}\s*$/.test(line)) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const heading = line.match(/^#{1,6}\s+(.+)$/);
+    if (heading) {
+      flushParagraph();
+      flushList();
+      blocks.push({ type: 'heading', text: heading[1].replace(/\s*#+$/, '') });
+      continue;
+    }
+
+    const bullet = line.match(/^(?:[-*+]\s+|\u2022\s+)(.+)$/);
+    const numbered = line.match(/^\d+[.)]\s+(.+)$/);
+    if (bullet || numbered) {
+      flushParagraph();
+      const ordered = Boolean(numbered);
+      if (!list || list.ordered !== ordered) {
+        flushList();
+        list = { ordered, items: [] };
+      }
+      list.items.push((bullet || numbered)![1]);
+      continue;
+    }
+
+    flushList();
+    const quote = line.match(/^>\s?(.*)$/);
+    if (quote) {
+      flushParagraph();
+      blocks.push({ type: 'quote', text: quote[1] });
+      continue;
+    }
+
+    // Treat plain-text section labels as headings too.
+    if (line.endsWith(':') && line.length < 90) {
+      flushParagraph();
+      blocks.push({ type: 'heading', text: line.slice(0, -1) });
+      continue;
+    }
+
+    paragraph.push(line);
+  }
+  flushParagraph();
+  flushList();
+
+  return (
+    <div className="space-y-3 text-[14px] leading-7 text-slate-200 sm:text-[15px]">
+      {blocks.map((block, index) => {
+        if (block.type === 'heading') {
+          return <h3 key={index} className="pt-1 text-sm font-bold tracking-wide text-sky-200">{renderInlineFormatting(block.text)}</h3>;
+        }
+        if (block.type === 'list') {
+          const List = block.ordered ? 'ol' : 'ul';
+          return (
+            <List key={index} className={`${block.ordered ? 'list-decimal' : 'list-disc'} space-y-1.5 pl-5 marker:text-sky-400`}>
+              {block.items.map((item, itemIndex) => <li key={itemIndex} className="pl-1">{renderInlineFormatting(item)}</li>)}
+            </List>
+          );
+        }
+        if (block.type === 'quote') {
+          return <blockquote key={index} className="border-l-2 border-sky-400/60 pl-3 text-slate-300">{renderInlineFormatting(block.text)}</blockquote>;
+        }
+        return <p key={index}>{renderInlineFormatting(block.text)}</p>;
+      })}
+    </div>
+  );
+}
 export default function StudyBuddyPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -247,8 +354,8 @@ export default function StudyBuddyPage() {
                   </div>
                 )}
 
-                <div className="whitespace-pre-line prose prose-invert prose-sm max-w-none">
-                  {m.text}
+                <div className="max-w-none">
+                  {isUser ? <p className="whitespace-pre-wrap leading-6">{m.text}</p> : <BuddyResponse text={m.text} />}
                 </div>
 
                 {m.examTip && (

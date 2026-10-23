@@ -90,6 +90,8 @@ export default function FlashcardsPage() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteredIds, setMasteredIds] = useState<string[]>([]);
+  const [viewedCardIds, setViewedCardIds] = useState<string[]>([]);
+  const [isFinished, setIsFinished] = useState(false);
   const [deckTitle, setDeckTitle] = useState('AZ-900 Core Concept Flashcards');
 
   // AI Generator States
@@ -126,8 +128,11 @@ export default function FlashcardsPage() {
   }, [cards.length]);
 
   const handleRevealAnswer = useCallback(() => {
+    if (card && !viewedCardIds.includes(card.id)) {
+      setViewedCardIds((prev) => [...prev, card.id]);
+    }
     setIsFlipped((prev) => !prev);
-  }, []);
+  }, [card, viewedCardIds]);
 
   const handleMarkMastered = useCallback(() => {
     if (card && !masteredIds.includes(card.id)) {
@@ -220,6 +225,8 @@ export default function FlashcardsPage() {
         setCurrentIdx(0);
         setIsFlipped(false);
         setMasteredIds([]);
+        setViewedCardIds([]);
+        setIsFinished(false);
         setDeckTitle(`AI Deck: ${topicToUse}`);
         setCardSource(data.source);
         fireCelebrationConfetti();
@@ -280,6 +287,13 @@ export default function FlashcardsPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleFinishDeck = async () => {
+    if (viewedCardIds.length !== cards.length || isFinished) return;
+    await handleSaveDeckToDatabase();
+    setIsFinished(true);
+    fireCelebrationConfetti();
   };
 
   return (
@@ -545,6 +559,24 @@ export default function FlashcardsPage() {
             </button>
           </div>
 
+          {viewedCardIds.length === cards.length && cards.length > 0 && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+              <div className="text-sm text-emerald-200">
+                {isFinished ? 'Deck finished. Your flashcard progress has been added to readiness.' : 'You reviewed every card. Finish the deck to record your progress.'}
+              </div>
+              {!isFinished && (
+                <button
+                  type="button"
+                  onClick={handleFinishDeck}
+                  disabled={isSaving}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-slate-950 font-bold text-xs transition-colors"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Finish Deck
+                </button>
+              )}
+            </div>
+          )}
           {/* Keyboard Navigator Status Bar */}
           <KeyboardNavigatorBar
             title="Flashcard Navigator"
