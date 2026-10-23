@@ -40,16 +40,24 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiStepIndex, setAiStepIndex] = useState(0);
 
-  // Calculate days remaining dynamically
-  const daysRemaining = useMemo(() => {
-    if (!preferences.examDate) return 7;
-    const target = new Date(preferences.examDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    target.setHours(0, 0, 0, 0);
-    const diffTime = target.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(diffDays, 1);
+  const [daysRemaining, setDaysRemaining] = useState(7);
+  const [minDate, setMinDate] = useState('');
+
+  // Calculate days remaining dynamically and safely
+  React.useEffect(() => {
+    try {
+      const now = new Date();
+      setMinDate(now.toISOString().split('T')[0]);
+      if (!preferences.examDate) return;
+      const target = new Date(preferences.examDate);
+      now.setHours(0, 0, 0, 0);
+      target.setHours(0, 0, 0, 0);
+      const diffTime = target.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      setDaysRemaining(Math.max(diffDays, 1));
+    } catch (e) {
+      console.warn('Date calculation notice:', e);
+    }
   }, [preferences.examDate]);
 
   const handleGenerate = () => {
@@ -151,7 +159,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 <input
                   type="date"
                   value={preferences.examDate}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={minDate || undefined}
                   onChange={(e) =>
                     setPreferences({ ...preferences, examDate: e.target.value })
                   }
