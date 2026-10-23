@@ -378,46 +378,41 @@ export default function StudyPlannerPage() {
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Page Header with Action Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20 mb-2">
-            <CalendarDays className="w-3.5 h-3.5 text-sky-400" />
-            <span>AI Revision Schedule</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            AZ-900 Study Planner
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+            Study Planner
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Personalized, day-by-day roadmap weighted by official Azure Fundamentals exam domains.
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            7-day preparation schedule organized by official AZ-900 exam domains.
           </p>
         </div>
 
         {/* Quick Toolbar */}
-        <div className="flex items-center flex-wrap gap-2.5">
-          {/* Judge Demo Preset */}
+        <div className="flex items-center flex-wrap gap-2">
+          {/* Sample Plan Preset */}
           <button
             onClick={handleLoadJudgeDemo}
-            title="Load instant pre-populated plan with 2 days completed for demonstration"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-all shadow-sm shadow-amber-500/10"
+            title="Load sample plan with progress"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white border border-slate-700 transition-colors"
           >
-            <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            <span>Judge Demo</span>
+            <span>Sample Plan</span>
           </button>
 
           {/* Configure Plan */}
           <button
             onClick={() => setShowOnboarding(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-950 bg-sky-500 hover:bg-sky-400 transition-colors"
           >
-            <Sliders className="w-3.5 h-3.5 text-sky-400" />
-            <span>Reconfigure Plan</span>
+            <Sliders className="w-3.5 h-3.5" />
+            <span>Configure</span>
           </button>
 
           {/* Reset button */}
           <button
             onClick={handleResetPlan}
-            title="Reset Plan to Default"
-            className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors border border-slate-800 hover:border-rose-500/30"
+            title="Reset plan"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -437,7 +432,7 @@ export default function StudyPlannerPage() {
         </div>
       ) : (
         /* View 2: Interactive Study Dashboard */
-        <div className="space-y-8 animate-in fade-in duration-300">
+        <div className="space-y-6 animate-in fade-in duration-300">
           {/* A. Top Executive KPI & Readiness Header */}
           <ReadinessHeader
             days={days}
@@ -447,17 +442,11 @@ export default function StudyPlannerPage() {
           />
 
           {/* B. Filter Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                <span>Daily Action Milestones</span>
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
-                  {filteredDays.length} of {days.length} Days Visible
-                </span>
+              <h2 className="text-base font-semibold text-white">
+                Daily Topics
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-                Bite-sized micro-learning with hands-on labs and active recall drills.
-              </p>
             </div>
 
             <FilterBar

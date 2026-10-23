@@ -87,21 +87,15 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   return (
     <div className="relative w-full max-w-2xl mx-auto my-6 px-4">
       {/* Glow highlight */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-sky-500/20 via-blue-600/20 to-purple-600/20 rounded-3xl blur-xl opacity-70 pointer-events-none"></div>
-
-      <div className="relative rounded-2xl glass-panel-elevated p-6 sm:p-8 text-slate-100 border border-slate-700/80">
+      <div className="relative rounded-2xl bg-slate-900 border border-slate-800 p-6 sm:p-8 text-slate-100 shadow-xl">
         {/* Header with Close option if reconfiguring */}
-        <div className="flex items-start justify-between gap-4 mb-6 pb-5 border-b border-slate-800">
+        <div className="flex items-start justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/30 mb-2">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse text-sky-400" />
-              <span>30-Second AI Study Planner Setup</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-              Customize Your AZ-900 Roadmap
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              Study Plan Setup
             </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              Tailor your daily milestones based on your real confidence level and exam deadline.
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              Set your target exam date, daily study time, and current topic confidence.
             </p>
           </div>
 
@@ -343,25 +337,23 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
             </div>
 
             {/* CTAs */}
-            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+            <div className="pt-3 flex flex-col sm:flex-row gap-2.5">
               {/* Primary CTA */}
               <button
                 type="button"
                 onClick={handleGenerate}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-sky-500/25 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                className="flex-1 py-3 px-5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm transition-colors text-center"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>Generate My Adaptive Study Roadmap ✨</span>
+                Create Study Plan
               </button>
 
-              {/* Instant Judge Demo CTA */}
+              {/* Sample Plan CTA */}
               <button
                 type="button"
                 onClick={onLoadJudgeDemo}
-                className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold text-sm transition-all hover:scale-[1.01] active:scale-[0.99] shadow-sm shadow-amber-500/10"
+                className="py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition-colors text-center"
               >
-                <Zap className="w-4 h-4 fill-amber-400 text-amber-400" />
-                <span>⚡ Load Instant Judge Demo Plan</span>
+                Load Sample Plan
               </button>
             </div>
           </div>
