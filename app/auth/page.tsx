@@ -20,7 +20,7 @@ import Link from 'next/link';
 
 export default function AuthPage() {
   const router = useRouter();
-  const { user, signIn, signUp, signInAsDemo, isConfigured } = useAuth();
+  const { user, signIn, signUp, isConfigured } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -254,35 +254,10 @@ export default function AuthPage() {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-800" />
+          <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Secured with Supabase Authentication</span>
           </div>
-          <div className="relative flex justify-center text-[11px] uppercase">
-            <span className="bg-[#0d1322] px-3 text-slate-500 font-medium tracking-wider">
-              Or quick access
-            </span>
-          </div>
-        </div>
-
-        {/* Instant Demo Account Button */}
-        <button
-          type="button"
-          onClick={async () => {
-            await signInAsDemo();
-            router.push('/');
-          }}
-          className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-800/60 hover:border-slate-700 text-slate-300 text-xs font-medium transition-all group"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
-          <span>Continue with Demo Student Account</span>
-        </button>
-
-        <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Secured with Supabase Authentication</span>
-        </div>
       </div>
     </div>
   );

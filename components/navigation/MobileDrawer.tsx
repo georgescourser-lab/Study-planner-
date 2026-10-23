@@ -20,7 +20,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onOpenSettings,
 }) => {
   const pathname = usePathname();
-  const { user, openAuthModal, signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   // Escape key listener to close drawer
   useEffect(() => {
@@ -125,7 +125,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                     {user.fullName || user.email.split('@')[0]}
                   </p>
                   <p className="text-[10px] text-slate-400 truncate">
-                    {user.isDemo ? 'Demo Student' : 'Azure Candidate'}
+                    Azure Candidate
                   </p>
                 </div>
               </div>
@@ -139,19 +139,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                openAuthModal('signin');
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 text-xs font-semibold transition-all"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In / Sign Up</span>
-            </button>
-          )}
+          ) : null}
 
           <button
             type="button"

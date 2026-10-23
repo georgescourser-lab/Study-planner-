@@ -14,7 +14,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
   const pathname = usePathname();
-  const { user, openAuthModal, signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   const getInitials = (name?: string, email?: string) => {
     if (name) {
@@ -92,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <p className="text-[10px] text-slate-400 truncate">
-                    {user.isDemo ? 'Demo Student' : 'Azure Candidate'}
+                    Azure Candidate
                   </p>
                 </div>
               </div>
@@ -108,16 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
               <LogOut className="w-4 h-4" />
             </button>
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => openAuthModal('signin')}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-400 hover:text-sky-300 text-xs font-semibold transition-all hover:scale-[1.01]"
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            <span>Sign In / Sign Up</span>
-          </button>
-        )}
+        ) : null}
 
         {/* Settings button */}
         <button

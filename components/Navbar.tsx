@@ -21,7 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   completedCount,
   totalDays,
 }) => {
-  const { user, openAuthModal, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -96,8 +96,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ExternalLink className="w-3 h-3 text-slate-500" />
           </a>
 
-          {/* User Auth Profile or Sign In CTA */}
-          {user ? (
+          {/* User Auth Profile */}
+          {user && (
             <div className="flex items-center gap-2 pl-1 border-l border-slate-800">
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-xs">
                 <div className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white text-[10px] font-bold">
@@ -116,14 +116,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <LogOut className="w-3.5 h-3.5" />
               </button>
             </div>
-          ) : (
-            <button
-              onClick={() => openAuthModal('signin')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 transition-all hover:scale-[1.02]"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In</span>
-            </button>
           )}
 
           {/* Reset button */}

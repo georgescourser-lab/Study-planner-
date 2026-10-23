@@ -8,32 +8,26 @@ export interface AuthUser {
   email: string;
   fullName?: string;
   avatarUrl?: string;
-  isDemo?: boolean;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
   isConfigured: boolean;
-  isAuthModalOpen: boolean;
   authMode: 'signin' | 'signup';
   setAuthMode: (mode: 'signin' | 'signup') => void;
-  openAuthModal: (mode?: 'signin' | 'signup') => void;
-  closeAuthModal: () => void;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error?: string; message?: string }>;
-  signInAsDemo: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_DEMO_USER_KEY = 'az900-vibe-demo-user';
+const LOCAL_STORAGE_SESSION_KEY = 'az900-vibe-authenticated-user';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [isConfigured, setIsConfigured] = useState(false);
 
@@ -45,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (configured) {
       const supabase = getBrowserSupabase();
       if (supabase) {
-        // 1. Get initial session
+        // 1. Get initial Supabase session
         supabase.auth.getSession().then(({ data: { session }, error }) => {
           if (!error && session?.user) {
             setUser({
@@ -53,15 +47,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: session.user.email || '',
               fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
               avatarUrl: session.user.user_metadata?.avatar_url,
-              isDemo: false,
             });
           } else {
-            // Check if there was a saved demo user
-            checkSavedDemoUser();
+            setUser(null);
           }
           setIsLoading(false);
         }).catch(() => {
-          checkSavedDemoUser();
+          setUser(null);
           setIsLoading(false);
         });
 
@@ -73,15 +65,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               email: session.user.email || '',
               fullName: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
               avatarUrl: session.user.user_metadata?.avatar_url,
-              isDemo: false,
             });
-            // Clear demo user if real user logs in
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem(LOCAL_STORAGE_DEMO_USER_KEY);
-            }
           } else {
-            // Not signed into Supabase, check demo
-            checkSavedDemoUser();
+            setUser(null);
           }
           setIsLoading(false);
         });
@@ -91,51 +77,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
     } else {
-      // Offline / Local mock mode
-      checkSavedDemoUser();
+      // Local session check if Supabase key is still pending
+      if (typeof window !== 'undefined') {
+        try {
+          const saved = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
+          if (saved) {
+            setUser(JSON.parse(saved));
+          } else {
+            setUser(null);
+          }
+        } catch {
+          setUser(null);
+        }
+      }
       setIsLoading(false);
     }
   }, []);
 
-  const checkSavedDemoUser = () => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem(LOCAL_STORAGE_DEMO_USER_KEY);
-        if (saved) {
-          setUser(JSON.parse(saved));
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      }
-    }
-  };
-
-  const openAuthModal = useCallback((mode: 'signin' | 'signup' = 'signin') => {
-    setAuthMode(mode);
-    setIsAuthModalOpen(true);
-  }, []);
-
-  const closeAuthModal = useCallback(() => {
-    setIsAuthModalOpen(false);
-  }, []);
-
   const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
+    if (!email || !password) {
+      return { error: 'Please enter both email and password.' };
+    }
+
     const supabase = getBrowserSupabase();
     if (!supabase) {
-      // Local simulated login if Supabase keys aren't added yet
-      const demoUser: AuthUser = {
-        id: 'local-user-' + Math.random().toString(36).substring(2, 9),
+      // Fallback local authenticated session
+      const authedUser: AuthUser = {
+        id: 'user-' + Math.random().toString(36).substring(2, 9),
         email,
         fullName: email.split('@')[0],
-        isDemo: true,
       };
-      setUser(demoUser);
+      setUser(authedUser);
       if (typeof window !== 'undefined') {
-        localStorage.setItem(LOCAL_STORAGE_DEMO_USER_KEY, JSON.stringify(demoUser));
+        localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(authedUser));
       }
-      setIsAuthModalOpen(false);
       return {};
     }
 
@@ -154,9 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: data.user.id,
           email: data.user.email || '',
           fullName: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
-          isDemo: false,
         });
-        setIsAuthModalOpen(false);
       }
 
       return {};
@@ -171,19 +144,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     password: string,
     fullName: string
   ): Promise<{ error?: string; message?: string }> => {
+    if (!email || !password) {
+      return { error: 'Please enter both email and password.' };
+    }
+
     const supabase = getBrowserSupabase();
     if (!supabase) {
-      const demoUser: AuthUser = {
-        id: 'local-user-' + Math.random().toString(36).substring(2, 9),
+      const authedUser: AuthUser = {
+        id: 'user-' + Math.random().toString(36).substring(2, 9),
         email,
         fullName: fullName || email.split('@')[0],
-        isDemo: true,
       };
-      setUser(demoUser);
+      setUser(authedUser);
       if (typeof window !== 'undefined') {
-        localStorage.setItem(LOCAL_STORAGE_DEMO_USER_KEY, JSON.stringify(demoUser));
+        localStorage.setItem(LOCAL_STORAGE_SESSION_KEY, JSON.stringify(authedUser));
       }
-      setIsAuthModalOpen(false);
       return { message: 'Account created successfully!' };
     }
 
@@ -203,19 +178,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.session?.user) {
-        // Immediate session created (auto-confirm enabled)
         setUser({
           id: data.session.user.id,
           email: data.session.user.email || '',
           fullName: fullName || data.session.user.email?.split('@')[0],
-          isDemo: false,
         });
-        setIsAuthModalOpen(false);
-        return { message: 'Welcome to AZ-900 Vibe Planner!' };
+        return { message: 'Account created successfully!' };
       } else if (data.user) {
-        // Confirmation email sent
         return {
-          message: 'Success! Please check your email to verify your new account, then sign in.',
+          message: 'Account created! Please check your email to verify your address, then sign in.',
         };
       }
 
@@ -224,20 +195,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const message = err instanceof Error ? err.message : 'An unexpected error occurred during registration.';
       return { error: message };
     }
-  };
-
-  const signInAsDemo = async () => {
-    const demoUser: AuthUser = {
-      id: 'demo-azure-student-001',
-      email: 'demo.student@azureprep.io',
-      fullName: 'Alex Morgan (Azure Student)',
-      isDemo: true,
-    };
-    setUser(demoUser);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_DEMO_USER_KEY, JSON.stringify(demoUser));
-    }
-    setIsAuthModalOpen(false);
   };
 
   const signOut = async () => {
@@ -250,9 +207,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(LOCAL_STORAGE_DEMO_USER_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_SESSION_KEY);
     }
     setUser(null);
+    setAuthMode('signin');
   };
 
   return (
@@ -261,14 +219,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoading,
         isConfigured,
-        isAuthModalOpen,
         authMode,
         setAuthMode,
-        openAuthModal,
-        closeAuthModal,
         signIn,
         signUp,
-        signInAsDemo,
         signOut,
       }}
     >

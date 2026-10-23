@@ -21,7 +21,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const STORAGE_KEY = 'az900_vibe_planner_state_v2';
 
 export default function DashboardPage() {
-  const { user, openAuthModal } = useAuth();
+  const { user } = useAuth();
   const [preferences, setPreferences] = useState<UserPreferences>(DEFAULT_USER_PREFERENCES);
   const [days, setDays] = useState<DayPlan[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -121,49 +121,16 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Visitor Welcome / Sign In Banner */}
-      {!user ? (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-gradient-to-r from-sky-500/10 via-slate-900 to-blue-500/10 border border-sky-500/20 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 shrink-0">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-white">
-                Sign in to save your personal AZ-900 study progress
-              </p>
-              <p className="text-[11px] text-slate-400">
-                Sync your daily tasks, quiz results, and study streak securely.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => openAuthModal('signin')}
-              className="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-colors shadow-sm"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => openAuthModal('signup')}
-              className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 font-medium text-xs border border-slate-700 transition-colors"
-            >
-              Sign Up Free
-            </button>
-          </div>
+      {/* Authenticated Student Status Card */}
+      <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-slate-300">
+            Welcome back, <strong className="text-white font-semibold">{user?.fullName || user?.email}</strong>
+          </span>
         </div>
-      ) : (
-        <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs">
-          <div className="flex items-center gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-slate-300">
-              Signed in as <strong className="text-white font-semibold">{user.fullName || user.email}</strong>
-              {user.isDemo && ' (Demo Mode)'}
-            </span>
-          </div>
-          <span className="text-[11px] text-sky-400 font-medium">Cloud Sync Active</span>
-        </div>
-      )}
+        <span className="text-[11px] text-sky-400 font-medium">Cloud Sync Active</span>
+      </div>
 
       {/* KPI Stats Row (Clean 3-column layout) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
