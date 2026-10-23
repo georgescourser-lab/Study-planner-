@@ -91,5 +91,53 @@ create trigger set_study_plans_updated_at
   for each row
   execute function public.handle_updated_at();
 
+-- 7. Saved Quizzes Table (Stores AI-generated or custom practice quizzes for review)
+create table if not exists public.saved_quizzes (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid null,
+  title text not null,
+  domain text not null default 'All Domains',
+  topic text null,
+  questions jsonb not null default '[]'::jsonb,
+  user_answers jsonb null default '[]'::jsonb,
+  score integer null default 0,
+  total_questions integer not null default 5,
+  created_at timestamp with time zone default now()
+);
+
+create index if not exists idx_saved_quizzes_created_at on public.saved_quizzes(created_at desc);
+create index if not exists idx_saved_quizzes_domain on public.saved_quizzes(domain);
+
+alter table public.saved_quizzes enable row level security;
+drop policy if exists "Allow public access to saved_quizzes" on public.saved_quizzes;
+create policy "Allow public access to saved_quizzes"
+  on public.saved_quizzes
+  for all
+  using (true)
+  with check (true);
+
+-- 8. Saved Flashcards Table (Stores AI-generated active recall flashcard decks)
+create table if not exists public.saved_flashcards (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid null,
+  title text not null,
+  domain text not null default 'Cloud Concepts',
+  topic text null,
+  cards jsonb not null default '[]'::jsonb,
+  mastered_ids jsonb not null default '[]'::jsonb,
+  created_at timestamp with time zone default now()
+);
+
+create index if not exists idx_saved_flashcards_created_at on public.saved_flashcards(created_at desc);
+
+alter table public.saved_flashcards enable row level security;
+drop policy if exists "Allow public access to saved_flashcards" on public.saved_flashcards;
+create policy "Allow public access to saved_flashcards"
+  on public.saved_flashcards
+  for all
+  using (true)
+  with check (true);
+
 -- Verification Query (Run this to verify schema setup):
--- select table_name, column_name, data_type from information_schema.columns where table_schema = 'public' and table_name in ('study_plans', 'study_tasks');
+-- select table_name, column_name, data_type from information_schema.columns where table_schema = 'public' and table_name in ('study_plans', 'study_tasks', 'saved_quizzes', 'saved_flashcards');
+

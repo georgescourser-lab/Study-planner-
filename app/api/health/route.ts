@@ -1,30 +1,13 @@
 import { NextResponse } from 'next/server';
-import { isSupabaseConfigured, getSupabaseClient } from '@/lib/supabase';
+import { testSupabaseConnectivity } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 5);
   const hasOpenAIKey = Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 5);
-  const supabaseReady = isSupabaseConfigured();
 
-  let supabaseConnected = false;
-  let supabaseMessage = 'Not configured (runs in resilient demo mode)';
-
-  if (supabaseReady) {
-    try {
-      const client = getSupabaseClient();
-      if (client) {
-        const { error } = await client.from('study_plans').select('count', { count: 'exact', head: true });
-        if (!error) {
-          supabaseConnected = true;
-          supabaseMessage = 'Connected and verified successfully';
-        } else {
-          supabaseMessage = `Configured, but connection check returned: ${error.message}`;
-        }
-      }
-    } catch (e: any) {
-      supabaseMessage = `Configured, error: ${e?.message}`;
-    }
-  }
+  const supabaseTest = await testSupabaseConnectivity();
 
   return NextResponse.json({
     status: 'ok',
@@ -32,12 +15,23 @@ export async function GET() {
     aiEngine: {
       geminiConfigured: hasGeminiKey,
       openAIConfigured: hasOpenAIKey,
+      candidateModels: ['gemini-3-flash-preview', 'gemini-3.8-flash', 'gemini-3.5-flash'],
       activeProvider: hasGeminiKey ? 'gemini' : hasOpenAIKey ? 'openai' : 'expert-curriculum-engine (built-in)',
     },
     database: {
-      supabaseConfigured: supabaseReady,
-      supabaseConnected,
-      statusMessage: supabaseMessage,
+      supabaseConfigured: supabaseTest.configured,
+      supabaseConnected: supabaseTest.connected,
+      allTablesPresent: supabaseTest.allTablesPresent ?? false,
+      missingTables: supabaseTest.missingTables ?? [],
+      url: supabaseTest.url,
+      tables: supabaseTest.tables,
+      statusMessage: supabaseTest.message,
+    },
+    features: {
+      aiStudyBuddy: true,
+      aiQuizGenerator: true,
+      quizDatabaseSave: supabaseTest.connected,
+      aiFlashcardGenerator: true,
     },
   });
 }

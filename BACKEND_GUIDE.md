@@ -171,7 +171,41 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
 ### 5. Backend Health Check
 - **Route:** `GET /api/health`
-- **Description:** Diagnostic endpoint to verify Gemini API key presence and Supabase database connection.
+- **Description:** Diagnostic endpoint to verify Gemini API key presence, Supabase database connection, and table status.
+
+---
+
+### 6. AI Study Buddy (Topic Search & Q&A)
+- **Route:** `POST /api/study-buddy`
+- **Description:** Deep-dives into any AZ-900 syllabus topic or query using Google Gemini and official Microsoft Learn objectives.
+- **Request Body:**
+```json
+{
+  "topic": "Azure Blob Storage Tiers",
+  "question": "What is the difference between Hot, Cool, and Archive tiers?",
+  "history": []
+}
+```
+
+---
+
+### 7. AI Practice Quiz Generator & Database Persistence
+- **Generate Quiz:** `POST /api/quizzes/generate`
+  - Body: `{ "topic": "CanNotDelete Resource Locks", "domain": "Management & Governance", "questionCount": 5 }`
+- **Save Quiz to Database:** `POST /api/quizzes/save`
+  - Body: `{ "title": "My Practice Quiz", "domain": "...", "questions": [...], "userAnswers": [...], "score": 4, "totalQuestions": 5 }`
+  - Persists directly into Supabase `saved_quizzes` table.
+- **Fetch Saved Quizzes for Review:** `GET /api/quizzes/saved`
+- **Delete Saved Quiz:** `DELETE /api/quizzes/saved/[id]`
+
+---
+
+### 8. AI Flashcard Generator
+- **Generate Flashcards:** `POST /api/flashcards/generate`
+  - Body: `{ "topic": "ExpressRoute vs VPN Gateway", "domain": "Azure Architecture & Services", "cardCount": 5 }`
+- **Save Flashcard Deck to Database:** `POST /api/flashcards/save`
+  - Persists into Supabase `saved_flashcards` table.
+- **Fetch Saved Flashcards:** `GET /api/flashcards/save`
 
 ---
 
@@ -185,3 +219,4 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
    - If user sets Architecture confidence to `1` or `2`, the AI allocates extra sessions and deep-dive drills to that domain.
 3. **Dedicated Review Days:**
    - The final 1 to 2 days are strictly reserved for full-length timed practice exams (45 questions, 700/1000 passing threshold) and SLA composite availability review.
+

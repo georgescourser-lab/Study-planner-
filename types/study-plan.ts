@@ -57,3 +57,48 @@ export interface PlanState {
   days: DayPlan[];
   lastRebalancedAt?: string;
 }
+
+export interface QuizQuestion {
+  id: string;
+  domain: string;
+  topic?: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  examTip: string;
+}
+
+export interface SavedQuiz {
+  id: string;
+  userId?: string | null;
+  title: string;
+  domain: string;
+  topic?: string;
+  questions: QuizQuestion[];
+  userAnswers?: (number | null)[];
+  score?: number;
+  totalQuestions: number;
+  createdAt?: string;
+}
+
+export interface FlashcardItem {
+  id: string;
+  domain: string;
+  topic?: string;
+  front: string;
+  back: string;
+  examHint: string;
+}
+
+export interface SavedFlashcardDeck {
+  id: string;
+  userId?: string | null;
+  title: string;
+  domain: string;
+  topic?: string;
+  cards: FlashcardItem[];
+  masteredIds?: string[];
+  createdAt?: string;
+}
+
