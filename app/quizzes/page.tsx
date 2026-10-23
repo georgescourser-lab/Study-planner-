@@ -1,15 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   HelpCircle,
   CheckCircle2,
   XCircle,
   RotateCcw,
   Sparkles,
-  ArrowRight,
-  ShieldCheck,
+  ChevronLeft,
   ChevronRight,
   Award,
   Database,
@@ -17,14 +15,14 @@ import {
   BookOpen,
   Trash2,
   Clock,
-  Layers,
   Wand2,
   RefreshCw,
   Eye,
   Check,
 } from 'lucide-react';
 import { fireCelebrationConfetti } from '@/lib/confetti';
-import { QuizQuestion, SavedQuiz } from '@/types/study-plan';
+import { QuizQuestion } from '@/types/study-plan';
+import { KeyboardNavigatorBar } from '@/components/KeyboardNavigatorBar';
 
 const DEFAULT_QUESTIONS: QuizQuestion[] = [
   {
@@ -151,6 +149,165 @@ export default function PracticeQuizzesPage() {
   const [isLoadingSaved, setIsLoadingSaved] = useState(false);
   const [reviewingQuiz, setReviewingQuiz] = useState<any | null>(null);
 
+  // Keyboard navigation feedback state
+  const [activeAction, setActiveAction] = useState<string | null>(null);
+
+  const triggerActiveAction = (action: string) => {
+    setActiveAction(action);
+    setTimeout(() => {
+      setActiveAction((current) => (current === action ? null : current));
+    }, 200);
+  };
+
+  const currentQ = questions[currentIdx] || questions[0];
+
+  const handleSelectOption = useCallback(
+    (idx: number) => {
+      if (isAnswerSubmitted) return;
+      setSelectedOption(idx);
+    },
+    [isAnswerSubmitted]
+  );
+
+  const handleNextQuestion = useCallback(() => {
+    if (questions.length === 0) return;
+    const nextIdx = currentIdx < questions.length - 1 ? currentIdx + 1 : 0;
+    setCurrentIdx(nextIdx);
+    const existing = userAnswers[nextIdx];
+    if (existing !== undefined && existing !== null) {
+      setSelectedOption(existing);
+      setIsAnswerSubmitted(true);
+    } else {
+      setSelectedOption(null);
+      setIsAnswerSubmitted(false);
+    }
+  }, [currentIdx, questions.length, userAnswers]);
+
+  const handlePrevQuestion = useCallback(() => {
+    if (questions.length === 0) return;
+    const prevIdx = currentIdx > 0 ? currentIdx - 1 : questions.length - 1;
+    setCurrentIdx(prevIdx);
+    const existing = userAnswers[prevIdx];
+    if (existing !== undefined && existing !== null) {
+      setSelectedOption(existing);
+      setIsAnswerSubmitted(true);
+    } else {
+      setSelectedOption(null);
+      setIsAnswerSubmitted(false);
+    }
+  }, [currentIdx, questions.length, userAnswers]);
+
+  const handleRevealOrSubmitAnswer = useCallback(() => {
+    if (isAnswerSubmitted) {
+      // If answer is already revealed, pressing Enter advances to the next card
+      handleNextQuestion();
+      return;
+    }
+
+    // Reveal answer
+    setIsAnswerSubmitted(true);
+    setAnsweredCount((prev) => prev + 1);
+
+    const answeredIdx = selectedOption;
+    setUserAnswers((prevAnswers) => {
+      const updated = [...prevAnswers];
+      updated[currentIdx] = answeredIdx;
+      return updated;
+    });
+
+    if (answeredIdx === currentQ?.correctIndex) {
+      setScore((prev) => prev + 1);
+      fireCelebrationConfetti();
+    }
+  }, [currentIdx, currentQ?.correctIndex, handleNextQuestion, isAnswerSubmitted, selectedOption]);
+
+  const handleResetQuiz = useCallback(() => {
+    setCurrentIdx(0);
+    setSelectedOption(null);
+    setIsAnswerSubmitted(false);
+    setScore(0);
+    setAnsweredCount(0);
+    setUserAnswers(new Array(questions.length).fill(null));
+    setSaveStatus(null);
+  }, [questions.length]);
+
+  // Global Keyboard Navigation Listener for Live Quiz
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only active when taking quiz in the interactive view
+      if (activeTab !== 'take-quiz' || reviewingQuiz !== null) return;
+
+      // Don't intercept when user is typing in form inputs/textarea/select
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      // If a button is focused, blur it so Enter doesn't re-trigger standard button click
+      if (target && (target.tagName === 'BUTTON' || target.tagName === 'A')) {
+        target.blur();
+      }
+
+      // Ignore browser command modifiers (e.g. Ctrl+R, Alt+Tab, Cmd+Shift)
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+      const key = e.key.toLowerCase();
+
+      // Arrow Right or Arrow Down -> Taken to the NEXT card
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        triggerActiveAction('next');
+        handleNextQuestion();
+      }
+      // Arrow Left or Arrow Up -> Taken to the PREVIOUS card
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        triggerActiveAction('prev');
+        handlePrevQuestion();
+      }
+      // Enter or Space -> Reveal Answer
+      else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        triggerActiveAction('reveal');
+        handleRevealOrSubmitAnswer();
+      }
+      // Letter keys A-D only for option selection (letters only)
+      else if (['a', 'b', 'c', 'd'].includes(key)) {
+        const idx = key.charCodeAt(0) - 97;
+        if (currentQ?.options && idx >= 0 && idx < currentQ.options.length) {
+          e.preventDefault();
+          triggerActiveAction('select');
+          handleSelectOption(idx);
+        }
+      }
+      // R -> Restart quiz
+      else if (key === 'r' && isAnswerSubmitted) {
+        e.preventDefault();
+        triggerActiveAction('reset');
+        handleResetQuiz();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    activeTab,
+    reviewingQuiz,
+    currentQ?.options,
+    isAnswerSubmitted,
+    handleNextQuestion,
+    handlePrevQuestion,
+    handleRevealOrSubmitAnswer,
+    handleSelectOption,
+    handleResetQuiz,
+  ]);
+
   // Load Saved Quizzes from Supabase on mount
   useEffect(() => {
     loadSavedQuizzes();
@@ -164,7 +321,6 @@ export default function PracticeQuizzesPage() {
       if (data.quizzes && Array.isArray(data.quizzes)) {
         setSavedQuizzes(data.quizzes);
       } else {
-        // Fallback to local storage if database table not yet queried
         const local = localStorage.getItem('az900_saved_quizzes');
         if (local) {
           setSavedQuizzes(JSON.parse(local));
@@ -218,46 +374,6 @@ export default function PracticeQuizzesPage() {
     }
   };
 
-  const currentQ = questions[currentIdx] || questions[0];
-
-  const handleSelectOption = (idx: number) => {
-    if (isAnswerSubmitted) return;
-    setSelectedOption(idx);
-  };
-
-  const handleSubmitAnswer = () => {
-    if (selectedOption === null || isAnswerSubmitted) return;
-    setIsAnswerSubmitted(true);
-    setAnsweredCount((prev) => prev + 1);
-
-    const updatedAnswers = [...userAnswers];
-    updatedAnswers[currentIdx] = selectedOption;
-    setUserAnswers(updatedAnswers);
-
-    if (selectedOption === currentQ.correctIndex) {
-      setScore((prev) => prev + 1);
-      fireCelebrationConfetti();
-    }
-  };
-
-  const handleNextQuestion = () => {
-    setSelectedOption(null);
-    setIsAnswerSubmitted(false);
-    if (currentIdx < questions.length - 1) {
-      setCurrentIdx((prev) => prev + 1);
-    }
-  };
-
-  const handleResetQuiz = () => {
-    setCurrentIdx(0);
-    setSelectedOption(null);
-    setIsAnswerSubmitted(false);
-    setScore(0);
-    setAnsweredCount(0);
-    setUserAnswers(new Array(questions.length).fill(null));
-    setSaveStatus(null);
-  };
-
   const handleSaveQuizToDatabase = async () => {
     setIsSaving(true);
     setSaveStatus(null);
@@ -286,7 +402,6 @@ export default function PracticeQuizzesPage() {
         fireCelebrationConfetti();
         loadSavedQuizzes();
       } else {
-        // Fallback to local storage if table missing or database returned notice
         const local = localStorage.getItem('az900_saved_quizzes');
         const existing = local ? JSON.parse(local) : [];
         const newRecord = {
@@ -305,7 +420,6 @@ export default function PracticeQuizzesPage() {
         );
       }
     } catch {
-      // Local storage fallback
       const local = localStorage.getItem('az900_saved_quizzes');
       const existing = local ? JSON.parse(local) : [];
       const newRecord = {
@@ -350,7 +464,7 @@ export default function PracticeQuizzesPage() {
             <span>AZ-900 Practice Quizzes</span>
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Generate customized AI practice quizzes on any Azure topic, score yourself, and save your results to the database for review.
+            Navigate through cards with Arrow keys (<kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">←</kbd> / <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">→</kbd>), choose answers using letters (<kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">A-D</kbd>), and press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">↵ Enter</kbd> to reveal answers.
           </p>
         </div>
 
@@ -707,7 +821,7 @@ export default function PracticeQuizzesPage() {
 
               <button
                 onClick={handleResetQuiz}
-                title="Restart Quiz"
+                title="Restart Quiz (R key)"
                 className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -718,7 +832,7 @@ export default function PracticeQuizzesPage() {
           {/* Question Metadata & Number */}
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span>
-              Question <strong className="text-white">{currentIdx + 1}</strong> of{' '}
+              Card <strong className="text-white">{currentIdx + 1}</strong> of{' '}
               <strong className="text-white">{questions.length}</strong>
             </span>
 
@@ -746,7 +860,7 @@ export default function PracticeQuizzesPage() {
                 'bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900';
 
               if (isSelected && !isAnswerSubmitted) {
-                optionStyle = 'bg-sky-500/15 border-sky-500/50 text-sky-200 shadow-sm shadow-sky-500/10';
+                optionStyle = 'bg-sky-500/15 border-sky-500/50 text-sky-200 shadow-sm shadow-sky-500/10 ring-1 ring-sky-500/30';
               } else if (isAnswerSubmitted) {
                 if (isCorrect) {
                   optionStyle = 'bg-emerald-500/20 border-emerald-500 text-emerald-200';
@@ -763,18 +877,37 @@ export default function PracticeQuizzesPage() {
                   type="button"
                   onClick={() => handleSelectOption(idx)}
                   disabled={isAnswerSubmitted}
-                  className={`w-full p-4 rounded-xl border text-left text-sm font-medium transition-all flex items-start gap-3.5 ${optionStyle}`}
+                  className={`w-full p-4 rounded-xl border text-left text-sm font-medium transition-all flex items-start justify-between gap-3.5 group cursor-pointer disabled:cursor-default ${optionStyle}`}
                 >
-                  <span className="w-6 h-6 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-xs font-bold shrink-0">
-                    {String.fromCharCode(65 + idx)}
-                  </span>
-                  <span className="flex-1 mt-0.5">{opt}</span>
-                  {isAnswerSubmitted && isCorrect && (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                  )}
-                  {isAnswerSubmitted && isSelected && !isCorrect && (
-                    <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
-                  )}
+                  <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                    <span
+                      className={`w-6 h-6 rounded-lg border flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+                        isSelected && !isAnswerSubmitted
+                          ? 'bg-sky-500 text-slate-950 border-sky-400 font-extrabold'
+                          : 'bg-slate-900 border-slate-800 text-slate-300'
+                      }`}
+                    >
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    <span className="mt-0.5 leading-relaxed">{opt}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {!isAnswerSubmitted && (
+                      <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 opacity-60 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[10px] text-slate-500">Key</span>
+                        <kbd className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px] text-slate-300 font-bold">
+                          {String.fromCharCode(65 + idx)}
+                        </kbd>
+                      </span>
+                    )}
+                    {isAnswerSubmitted && isCorrect && (
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                    )}
+                    {isAnswerSubmitted && isSelected && !isCorrect && (
+                      <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -814,6 +947,103 @@ export default function PracticeQuizzesPage() {
             </div>
           )}
 
+          {/* Card Navigation Controls */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-800">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePrevQuestion}
+                title="Previous Card (← or ↑)"
+                className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900 border transition-all text-xs font-semibold text-slate-300 hover:text-white ${
+                  activeAction === 'prev'
+                    ? 'border-sky-400 bg-slate-800 ring-2 ring-sky-400/30'
+                    : 'border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Previous Card</span>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400">
+                  ← / ↑
+                </kbd>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNextQuestion}
+                title="Next Card (→ or ↓)"
+                className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900 border transition-all text-xs font-semibold text-slate-300 hover:text-white ${
+                  activeAction === 'next'
+                    ? 'border-sky-400 bg-slate-800 ring-2 ring-sky-400/30'
+                    : 'border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <span>Next Card</span>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400">
+                  → / ↓
+                </kbd>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Save Quiz to Database Button */}
+              <button
+                type="button"
+                onClick={handleSaveQuizToDatabase}
+                disabled={isSaving}
+                title="Save Quiz to Database"
+                className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-colors disabled:opacity-40"
+              >
+                {isSaving ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                ) : (
+                  <Save className="w-4 h-4 text-emerald-400" />
+                )}
+              </button>
+
+              {/* Reveal / Submit Answer Button */}
+              <button
+                type="button"
+                onClick={handleRevealOrSubmitAnswer}
+                className={`px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-sky-500/20 flex items-center justify-center gap-2 ${
+                  activeAction === 'reveal' ? 'scale-105 ring-2 ring-sky-300' : ''
+                }`}
+              >
+                <span>{isAnswerSubmitted ? 'Next Card' : 'Reveal Answer'}</span>
+                <kbd className="px-1.5 py-0.5 rounded bg-sky-950/70 border border-sky-300/40 text-[10px] font-mono text-sky-200">
+                  ↵ Enter
+                </kbd>
+              </button>
+            </div>
+          </div>
+
+          {/* Keyboard Navigator Bar */}
+          <KeyboardNavigatorBar
+            title="Quiz Navigator"
+            shortcuts={[
+              {
+                keys: ['←', '↑'],
+                label: 'Previous Card',
+                active: activeAction === 'prev',
+              },
+              {
+                keys: ['↵ Enter'],
+                label: isAnswerSubmitted ? 'Next Card' : 'Reveal Answer',
+                active: activeAction === 'reveal',
+              },
+              {
+                keys: ['→', '↓'],
+                label: 'Next Card',
+                active: activeAction === 'next',
+              },
+              {
+                keys: ['A-D'],
+                label: 'Select Option',
+                active: activeAction === 'select',
+              },
+            ]}
+          />
+
           {/* Save Status Notification */}
           {saveStatus && (
             <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
@@ -821,56 +1051,6 @@ export default function PracticeQuizzesPage() {
               <span>{saveStatus}</span>
             </div>
           )}
-
-          {/* Bottom Controls Row */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-slate-800">
-            {/* Save Quiz to Database Button */}
-            <button
-              type="button"
-              onClick={handleSaveQuizToDatabase}
-              disabled={isSaving}
-              className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-40"
-            >
-              {isSaving ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
-                  <span>Saving to Database...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 text-emerald-400" />
-                  <span>Save Quiz to Database for Review</span>
-                </>
-              )}
-            </button>
-
-            {/* Answer / Next Button */}
-            {!isAnswerSubmitted ? (
-              <button
-                type="button"
-                onClick={handleSubmitAnswer}
-                disabled={selectedOption === null}
-                className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 disabled:opacity-40 disabled:hover:bg-sky-500 text-slate-950 font-bold text-xs transition-colors shadow-md shadow-sky-500/20"
-              >
-                Submit Answer
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={
-                  currentIdx < questions.length - 1
-                    ? handleNextQuestion
-                    : handleResetQuiz
-                }
-                className="px-6 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-colors shadow-md shadow-sky-500/20 flex items-center justify-center gap-1.5"
-              >
-                <span>
-                  {currentIdx < questions.length - 1 ? 'Next Question' : 'Restart Quiz'}
-                </span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
         </div>
       )}
     </div>

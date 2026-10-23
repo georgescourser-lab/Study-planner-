@@ -1,24 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Layers,
   RotateCw,
   CheckCircle2,
-  Bookmark,
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Cloud,
   Wand2,
   RefreshCw,
   Save,
-  Database,
-  Award,
-  BookOpen,
 } from 'lucide-react';
 import { fireCelebrationConfetti } from '@/lib/confetti';
 import { FlashcardItem } from '@/types/study-plan';
+import { KeyboardNavigatorBar } from '@/components/KeyboardNavigatorBar';
 
 const DEFAULT_FLASHCARDS: FlashcardItem[] = [
   {
@@ -101,25 +97,39 @@ export default function FlashcardsPage() {
   const [customTopic, setCustomTopic] = useState('');
   const [selectedDomain, setSelectedDomain] = useState('Azure Architecture & Services');
   const [cardCount, setCardCount] = useState(5);
-  const [cardSource, setCardSource] = useState<'gemini' | 'curriculum-engine' | 'preset'>('preset');
+  const [, setCardSource] = useState<'gemini' | 'curriculum-engine' | 'preset'>('preset');
 
   // Supabase Save States
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
+  // Keyboard navigation active feedback state
+  const [activeAction, setActiveAction] = useState<string | null>(null);
+
+  const triggerActiveAction = (action: string) => {
+    setActiveAction(action);
+    setTimeout(() => {
+      setActiveAction((current) => (current === action ? null : current));
+    }, 200);
+  };
+
   const card = cards[currentIdx] || cards[0];
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setIsFlipped(false);
     setCurrentIdx((prev) => (prev < cards.length - 1 ? prev + 1 : 0));
-  };
+  }, [cards.length]);
 
-  const handlePrev = () => {
+  const handlePrev = useCallback(() => {
     setIsFlipped(false);
     setCurrentIdx((prev) => (prev > 0 ? prev - 1 : cards.length - 1));
-  };
+  }, [cards.length]);
 
-  const handleMarkMastered = () => {
+  const handleRevealAnswer = useCallback(() => {
+    setIsFlipped((prev) => !prev);
+  }, []);
+
+  const handleMarkMastered = useCallback(() => {
     if (card && !masteredIds.includes(card.id)) {
       const updated = [...masteredIds, card.id];
       setMasteredIds(updated);
@@ -129,7 +139,63 @@ export default function FlashcardsPage() {
       }
     }
     handleNext();
-  };
+  }, [card, cards.length, handleNext, masteredIds]);
+
+  // Global Keyboard Navigation Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+
+      // Don't intercept when user is typing in form inputs, textareas, selects
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      // If a button is focused, blur it so Enter doesn't re-trigger standard button click
+      if (target && (target.tagName === 'BUTTON' || target.tagName === 'A')) {
+        target.blur();
+      }
+
+      // Ignore browser command modifiers (e.g. Ctrl+R, Alt+Tab, Cmd+Shift)
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+      const key = e.key.toLowerCase();
+
+      // Arrow Right or Arrow Down (or 'd') -> Next Card
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || key === 'd') {
+        e.preventDefault();
+        triggerActiveAction('next');
+        handleNext();
+      }
+      // Arrow Left or Arrow Up (or 'a') -> Previous Card
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || key === 'a') {
+        e.preventDefault();
+        triggerActiveAction('prev');
+        handlePrev();
+      }
+      // Enter or Space (or 'f') -> Reveal Answer
+      else if (e.key === 'Enter' || e.key === ' ' || key === 'f') {
+        e.preventDefault();
+        triggerActiveAction('reveal');
+        handleRevealAnswer();
+      }
+      // M -> Mark Mastered
+      else if (key === 'm') {
+        e.preventDefault();
+        triggerActiveAction('master');
+        handleMarkMastered();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrev, handleRevealAnswer, handleMarkMastered]);
 
   const handleGenerateCards = async (overrideTopic?: string) => {
     const topicToUse = overrideTopic || customTopic.trim() || 'Azure Architecture & Services';
@@ -229,7 +295,7 @@ export default function FlashcardsPage() {
             <span>{deckTitle}</span>
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Generate custom flashcard decks on any Azure topic with Gemini AI, flip to test recall, and save decks to database.
+            Navigate cards using Arrow keys (<kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">←</kbd> / <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">→</kbd>) and press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] text-slate-300">↵ Enter</kbd> to reveal answers.
           </p>
         </div>
 
@@ -352,10 +418,19 @@ export default function FlashcardsPage() {
 
       {/* Interactive Flashcard Container */}
       {card && (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div
-            onClick={() => setIsFlipped((prev) => !prev)}
-            className={`min-h-[300px] sm:min-h-[340px] p-8 sm:p-12 rounded-3xl cursor-pointer transition-all duration-300 flex flex-col justify-between select-none relative group border ${
+            onClick={handleRevealAnswer}
+            tabIndex={0}
+            role="button"
+            aria-label={`Flashcard: ${card.domain}. Press Enter or click to reveal answer.`}
+            onKeyDown={(e) => {
+              if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                handleRevealAnswer();
+              }
+            }}
+            className={`min-h-[300px] sm:min-h-[340px] p-8 sm:p-12 rounded-3xl cursor-pointer transition-all duration-300 flex flex-col justify-between select-none relative group border outline-none focus-visible:ring-2 focus-visible:ring-sky-400/50 ${
               isFlipped
                 ? 'bg-gradient-to-br from-slate-900 via-indigo-950/40 to-slate-900 border-sky-500/40 shadow-xl shadow-sky-500/10'
                 : 'bg-slate-900/90 hover:bg-slate-900 border-slate-800 hover:border-slate-700 shadow-xl'
@@ -366,9 +441,11 @@ export default function FlashcardsPage() {
               <span className="px-3 py-1 rounded-full font-semibold bg-sky-500/15 text-sky-400 border border-sky-500/30">
                 {card.domain}
               </span>
-              <span className="flex items-center gap-1.5 text-slate-500 text-xs">
+              <span className="flex items-center gap-1.5 text-slate-400 text-xs">
                 <RotateCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500 text-sky-400" />
-                <span>Click to {isFlipped ? 'Flip to Prompt' : 'Reveal Answer'}</span>
+                <span>
+                  Press <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-200">↵ Enter</kbd> to {isFlipped ? 'Flip to Prompt' : 'Reveal Answer'}
+                </span>
               </span>
             </div>
 
@@ -418,31 +495,70 @@ export default function FlashcardsPage() {
           </div>
 
           {/* Card Navigation Controls */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-3 sm:gap-4">
             <button
               onClick={handlePrev}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+              title="Previous Card (← or ↑)"
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 border transition-all text-xs font-semibold text-slate-300 hover:text-white ${
+                activeAction === 'prev'
+                  ? 'border-sky-400 bg-slate-800 ring-2 ring-sky-400/30'
+                  : 'border-slate-800 hover:border-slate-700'
+              }`}
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Previous</span>
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400">
+                ← / ↑
+              </kbd>
             </button>
 
             <button
               onClick={handleMarkMastered}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-colors"
+              title="Mark Mastered (M key)"
+              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border text-xs font-bold transition-all ${
+                activeAction === 'master'
+                  ? 'border-emerald-400 ring-2 ring-emerald-400/40 scale-105'
+                  : 'border-emerald-500/40'
+              }`}
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>I Know This!</span>
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-[10px] font-mono text-emerald-300">
+                M
+              </kbd>
             </button>
 
             <button
               onClick={handleNext}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+              title="Next Card (→ or ↓)"
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 border transition-all text-xs font-semibold text-slate-300 hover:text-white ${
+                activeAction === 'next'
+                  ? 'border-sky-400 bg-slate-800 ring-2 ring-sky-400/30'
+                  : 'border-slate-800 hover:border-slate-700'
+              }`}
             >
               <span>Next</span>
+              <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400">
+                → / ↓
+              </kbd>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Keyboard Navigator Status Bar */}
+          <KeyboardNavigatorBar
+            title="Flashcard Navigator"
+            shortcuts={[
+              { keys: ['←', '↑'], label: 'Previous Card', active: activeAction === 'prev' },
+              {
+                keys: ['↵ Enter', 'Space'],
+                label: isFlipped ? 'Flip to Prompt' : 'Reveal Answer',
+                active: activeAction === 'reveal',
+              },
+              { keys: ['→', '↓'], label: 'Next Card', active: activeAction === 'next' },
+              { keys: ['M'], label: 'Mark Mastered', active: activeAction === 'master' },
+            ]}
+          />
         </div>
       )}
     </div>
