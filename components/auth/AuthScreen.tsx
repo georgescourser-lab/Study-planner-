@@ -82,21 +82,13 @@ export const AuthScreen: React.FC = () => {
 
       {/* Top Header with official logo */}
       <header className="w-full border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
+          <div className="flex items-center">
             <img
               src="/logo.svg"
-              alt="CloudPrep AZ-900 Logo"
-              className="w-9 h-9 object-contain"
+              alt="CloudPrep Logo"
+              className="h-11 sm:h-13 w-auto object-contain transition-transform hover:scale-105"
             />
-            <div className="flex flex-col">
-              <span className="font-bold text-sm tracking-tight text-white">
-                CloudPrep <span className="text-sky-400">AZ-900</span>
-              </span>
-              <span className="text-[10px] text-slate-500 font-medium hidden sm:inline">
-                Personal Study Suite
-              </span>
-            </div>
           </div>
 
           <a
@@ -118,41 +110,41 @@ export const AuthScreen: React.FC = () => {
           {/* ========================================================= */}
           {/* LEFT COLUMN: Overview & Study Buddy Photo                 */}
           {/* ========================================================= */}
-          <div className="lg:col-span-7 space-y-5">
+          <div className="lg:col-span-7 space-y-6">
             {/* Exam Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20">
               <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-              <span>Microsoft Certified: Azure Fundamentals (AZ-900)</span>
+              <span>Microsoft Certified: Azure Fundamentals</span>
             </div>
 
-            {/* Headline */}
-            <div className="space-y-2.5">
+            {/* Headline & Subtitle */}
+            <div className="space-y-3">
               <h1 className="text-3xl sm:text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">
-                Your personal AI accelerator for the{' '}
+                Master your exam preparation with an{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-400 to-indigo-400">
-                  AZ-900 certification
+                  adaptive AI companion
                 </span>
                 .
               </h1>
               <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-2xl">
-                A streamlined study companion engineered to help you master cloud concepts, core Azure architectural services, and security governance with zero guesswork.
+                Structured modules covering cloud architecture, core Azure services, identity management, and governance with real-time feedback.
               </p>
             </div>
 
-            {/* AI Study Buddy Picture (Replaces the wordy 4-card grid) */}
-            <div className="relative rounded-2xl overflow-hidden border border-slate-800/90 bg-gradient-to-br from-slate-900/90 to-slate-950/90 shadow-2xl group max-w-xl">
-              <div className="relative w-full overflow-hidden p-2 bg-slate-950/50 flex items-center justify-center">
+            {/* AI Study Buddy Visual */}
+            <div className="relative rounded-2xl overflow-hidden border border-slate-800/80 bg-gradient-to-b from-[#0e1626] to-[#070b14] shadow-2xl shadow-sky-950/40 group w-full max-w-xl">
+              <div className="relative w-full aspect-[1275/1233] max-h-[460px] overflow-hidden flex items-center justify-center p-2.5 bg-slate-950/60">
                 <img
                   src="/study-buddy.png"
-                  alt="AI Azure Study Buddy"
-                  className="w-full max-h-[320px] object-contain rounded-xl transition-transform duration-500 group-hover:scale-[1.01]"
+                  alt="AI Study Buddy"
+                  className="w-full h-full object-contain rounded-xl transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               </div>
-              <div className="px-4 py-2.5 border-t border-slate-800/80 bg-slate-900/80 flex items-center justify-between">
+              <div className="px-4 py-2.5 border-t border-slate-800/80 bg-slate-900/90 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-semibold text-white">
-                    AI Azure Study Buddy & Interactive Sandbox
+                  <span className="text-xs font-semibold text-slate-200">
+                    AI Study Buddy & Interactive Sandbox
                   </span>
                 </div>
                 <span className="text-[11px] text-sky-400 font-medium">
@@ -165,15 +157,15 @@ export const AuthScreen: React.FC = () => {
             <div className="pt-1 flex flex-wrap items-center gap-4 text-xs text-slate-400">
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-400" />
-                <span>2026 Aligned Curriculum</span>
+                <span>2026 Curriculum Aligned</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-400" />
-                <span>Dynamic Life Happens Rebalancer</span>
+                <span>Dynamic Schedule Rebalancer</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-400" />
-                <span>Cloud Sync & Readiness Scoring</span>
+                <span>Readiness Scoring</span>
               </div>
             </div>
           </div>
@@ -219,12 +211,12 @@ export const AuthScreen: React.FC = () => {
 
               <div className="mb-5">
                 <h2 className="text-base font-semibold text-white">
-                  {authMode === 'signin' ? 'Sign in to your account' : 'Create your study account'}
+                  {authMode === 'signin' ? 'Welcome Back' : 'Create Your Account'}
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
                   {authMode === 'signin'
-                    ? 'Authentication is required to access your study plan and exam tools.'
-                    : 'Sign up with your email to start your personalized study journey.'}
+                    ? 'Enter your credentials to resume your progress.'
+                    : 'Set up your profile to generate your study schedule.'}
                 </p>
               </div>
 
